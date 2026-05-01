@@ -1,0 +1,17 @@
+# 摄影全栈 Agent — 依赖清单
+# 安装：pip install -r requirements.txt
+
+# 核心依赖
+anthropic>=0.89.0
+fastapi>=0.115.0
+Pillow>=11.3.0
+python-multipart>=0.0.20
+requests>=2.32.5
+uvicorn[standard]>=0.30.0
+
+# 可选依赖（缺少时对应功能降级，不影响启动）
+rawpy>=0.26.1          # RAW 格式解析（.arw/.cr2/.nef 等）；缺少时回退到同名 JPG 预览图
+python-dotenv>=1.1.1   # 从 .env 文件加载环境变量；缺少时只读系统环境变量
+
+# 开发 / 测试依赖
+pytest>=8.3.0

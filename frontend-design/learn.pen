@@ -1,0 +1,642 @@
+{
+  "version": "2.11",
+  "children": [
+    {
+      "type": "frame",
+      "id": "root",
+      "name": "Learn - 学习教练",
+      "x": 0,
+      "y": 0,
+      "width": 1440,
+      "height": 900,
+      "fill": "#F8FAFC",
+      "clip": true,
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "top-nav",
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 60,
+          "fill": "#FFFFFF",
+          "stroke": { "align": "inside", "thickness": { "bottom": 1 }, "fill": "#E2E8F0" },
+          "layout": "horizontal",
+          "alignItems": "center",
+          "justifyContent": "space_between",
+          "padding": [0, 22, 0, 22],
+          "children": [
+            {
+              "type": "frame",
+              "id": "nav-left",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 34,
+              "width": "fit_content",
+              "height": 60,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "brand",
+                  "layout": "horizontal",
+                  "alignItems": "center",
+                  "gap": 8,
+                  "width": "fit_content",
+                  "height": 42,
+                  "children": [
+                    { "type": "icon_font", "id": "brand-camera", "iconFontFamily": "lucide", "iconFontName": "camera", "width": 24, "height": 24, "fill": "#0F172A" },
+                    { "type": "text", "id": "brand-name", "content": "PhotoAI", "fontFamily": "Inter", "fontSize": 23, "fontWeight": "800", "fill": "#0F172A" }
+                  ]
+                },
+                { "type": "text", "id": "nav-dashboard", "content": "工作台", "fontFamily": "Inter", "fontSize": 15, "fill": "#64748B" },
+                { "type": "text", "id": "nav-analyze", "content": "分析", "fontFamily": "Inter", "fontSize": 15, "fill": "#64748B" },
+                { "type": "text", "id": "nav-assets", "content": "素材库", "fontFamily": "Inter", "fontSize": 15, "fill": "#64748B" },
+                { "type": "text", "id": "nav-plan", "content": "规划", "fontFamily": "Inter", "fontSize": 15, "fill": "#64748B" },
+                { "type": "text", "id": "nav-learn", "content": "学习", "fontFamily": "Inter", "fontSize": 15, "fontWeight": "800", "fill": "#0F172A" },
+                { "type": "text", "id": "nav-history", "content": "历史", "fontFamily": "Inter", "fontSize": 15, "fill": "#64748B" }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "nav-right",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 22,
+              "width": "fit_content",
+              "height": 60,
+              "children": [
+                { "type": "icon_font", "id": "bell-icon", "iconFontFamily": "lucide", "iconFontName": "bell", "width": 20, "height": 20, "fill": "#0F172A" },
+                {
+                  "type": "frame",
+                  "id": "avatar",
+                  "width": 32,
+                  "height": 32,
+                  "cornerRadius": 16,
+                  "fill": { "type": "gradient", "gradientType": "linear", "rotation": 135, "colors": [ { "color": "#93C5FD", "position": 0 }, { "color": "#F97316", "position": 0.52 }, { "color": "#0F172A", "position": 1 } ] }
+                },
+                { "type": "icon_font", "id": "avatar-chevron", "iconFontFamily": "lucide", "iconFontName": "chevron-down", "width": 16, "height": 16, "fill": "#0F172A" }
+              ]
+            }
+          ]
+        },
+        { "type": "rectangle", "id": "active-nav-line", "x": 445, "y": 56, "width": 32, "height": 3, "fill": "#0F172A", "cornerRadius": 2 },
+        {
+          "type": "frame",
+          "id": "summary-card",
+          "x": 20,
+          "y": 78,
+          "width": 1400,
+          "height": 104,
+          "fill": "#FFFFFF",
+          "cornerRadius": 10,
+          "stroke": { "align": "inside", "thickness": 1, "fill": "#E2E8F0" },
+          "layout": "horizontal",
+          "alignItems": "center",
+          "justifyContent": "space_between",
+          "padding": [0, 24, 0, 24],
+          "children": [
+            {
+              "type": "frame",
+              "id": "hero-left",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 18,
+              "width": "fit_content",
+              "height": 76,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "coach-icon-wrap",
+                  "width": 58,
+                  "height": 58,
+                  "cornerRadius": 29,
+                  "fill": "#0F172A",
+                  "layout": "horizontal",
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                  "children": [
+                    { "type": "icon_font", "id": "coach-icon", "iconFontFamily": "lucide", "iconFontName": "graduation-cap", "width": 30, "height": 30, "fill": "#FFFFFF" }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "hero-copy",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "width": "fit_content",
+                  "height": "fit_content",
+                  "children": [
+                    { "type": "text", "id": "hero-title", "content": "学习教练", "fontFamily": "Inter", "fontSize": 28, "fontWeight": "800", "fill": "#0F172A" },
+                    { "type": "text", "id": "hero-subtitle", "content": "基于历史照片反馈的持续成长体系：点评、练习、追踪", "fontFamily": "Inter", "fontSize": 15, "fill": "#64748B" }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "hero-stats",
+              "layout": "horizontal",
+              "gap": 18,
+              "width": "fit_content",
+              "height": 70,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "stat-streak",
+                  "layout": "horizontal",
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                  "gap": 14,
+                  "width": 138,
+                  "height": 70,
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": { "align": "inside", "thickness": 1, "fill": "#E2E8F0" },
+                  "children": [
+                    { "type": "icon_font", "id": "flame-icon", "iconFontFamily": "lucide", "iconFontName": "flame", "width": 24, "height": 24, "fill": "#0F172A" },
+                    { "type": "text", "id": "streak-text", "content": "12\n连续学习", "fontFamily": "Inter", "fontSize": 28, "fontWeight": "800", "lineHeight": 1.2, "fill": "#0F172A" }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "stat-done",
+                  "layout": "horizontal",
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                  "gap": 14,
+                  "width": 128,
+                  "height": 70,
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": { "align": "inside", "thickness": 1, "fill": "#E2E8F0" },
+                  "children": [
+                    { "type": "icon_font", "id": "done-icon", "iconFontFamily": "lucide", "iconFontName": "circle-check", "width": 24, "height": 24, "fill": "#0F172A" },
+                    { "type": "text", "id": "done-text", "content": "28\n已完成", "fontFamily": "Inter", "fontSize": 28, "fontWeight": "800", "lineHeight": 1.2, "fill": "#0F172A" }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "stat-level",
+                  "layout": "horizontal",
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                  "gap": 14,
+                  "width": 170,
+                  "height": 70,
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": { "align": "inside", "thickness": 1, "fill": "#E2E8F0" },
+                  "children": [
+                    { "type": "icon_font", "id": "medal-icon", "iconFontFamily": "lucide", "iconFontName": "badge", "width": 24, "height": 24, "fill": "#F97316" },
+                    { "type": "text", "id": "level-text", "content": "Lv.3\n当前等级", "fontFamily": "Inter", "fontSize": 28, "fontWeight": "800", "lineHeight": 1.2, "fill": "#F97316" }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "recent-card",
+          "x": 20,
+          "y": 200,
+          "width": 892,
+          "height": 390,
+          "fill": "#FFFFFF",
+          "cornerRadius": 10,
+          "stroke": { "align": "inside", "thickness": 1, "fill": "#E2E8F0" },
+          "layout": "vertical",
+          "gap": 14,
+          "padding": 18,
+          "children": [
+            {
+              "type": "frame",
+              "id": "recent-title-row",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 10,
+              "width": "fill_container",
+              "height": 24,
+              "children": [
+                { "type": "icon_font", "id": "recent-icon", "iconFontFamily": "lucide", "iconFontName": "clipboard-list", "width": 20, "height": 20, "fill": "#0F172A" },
+                { "type": "text", "id": "recent-title", "content": "近期照片评估", "fontFamily": "Inter", "fontSize": 18, "fontWeight": "800", "fill": "#0F172A" }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "photo-feedback-1",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 22,
+              "width": "fill_container",
+              "height": 100,
+              "fill": "#FFFFFF",
+              "cornerRadius": 8,
+              "stroke": { "align": "inside", "thickness": 1, "fill": "#E2E8F0" },
+              "padding": [0, 10, 0, 10],
+              "children": [
+                { "type": "frame", "id": "photo-thumb-1", "width": 114, "height": 80, "cornerRadius": 6, "fill": { "type": "gradient", "gradientType": "linear", "rotation": 135, "colors": [ { "color": "#F97316", "position": 0 }, { "color": "#60A5FA", "position": 0.52 }, { "color": "#0F172A", "position": 1 } ] } },
+                {
+                  "type": "frame",
+                  "id": "photo-copy-1",
+                  "layout": "vertical",
+                  "gap": 9,
+                  "width": "fill_container",
+                  "height": "fit_content",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "photo-row-1",
+                      "layout": "horizontal",
+                      "alignItems": "center",
+                      "gap": 16,
+                      "width": "fill_container",
+                      "height": 26,
+                      "children": [
+                        { "type": "text", "id": "photo-name-1", "content": "IMG_045.jpg", "fontFamily": "Inter", "fontSize": 16, "fontWeight": "800", "fill": "#0F172A" },
+                        { "type": "text", "id": "photo-source-1", "content": "来源：Coach 分析", "fontFamily": "Inter", "fontSize": 13, "fill": "#64748B" },
+                        { "type": "frame", "id": "photo-status-1", "layout": "horizontal", "alignItems": "center", "justifyContent": "center", "width": 54, "height": 24, "fill": "#FEF3C7", "cornerRadius": 5, "children": [ { "type": "text", "id": "photo-status-text-1", "content": "待复习", "fontFamily": "Inter", "fontSize": 12, "fontWeight": "800", "fill": "#D97706" } ] },
+                        { "type": "text", "id": "photo-link-1", "content": "查看分析记录   〉", "fontFamily": "Inter", "fontSize": 13, "fill": "#475569" }
+                      ]
+                    },
+                    { "type": "text", "id": "photo-note-1", "content": "点评：主体突出，但高光区域轻微过曝，天空层次有所丢失；建议降低曝光补偿，使用渐变镜平衡明暗。", "fontFamily": "Inter", "fontSize": 13, "fill": "#475569" },
+                    { "type": "text", "id": "photo-action-1", "content": "后续拍摄建议：尝试低角度仰拍，利用天空作简洁背景，注意过曝控制。", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "700", "fill": "#16A34A" }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "photo-feedback-2",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 22,
+              "width": "fill_container",
+              "height": 100,
+              "fill": "#FFFFFF",
+              "cornerRadius": 8,
+              "stroke": { "align": "inside", "thickness": 1, "fill": "#E2E8F0" },
+              "padding": [0, 10, 0, 10],
+              "children": [
+                { "type": "frame", "id": "photo-thumb-2", "width": 114, "height": 80, "cornerRadius": 6, "fill": { "type": "gradient", "gradientType": "linear", "rotation": 130, "colors": [ { "color": "#0EA5E9", "position": 0 }, { "color": "#1E293B", "position": 0.55 }, { "color": "#F97316", "position": 1 } ] } },
+                {
+                  "type": "frame",
+                  "id": "photo-copy-2",
+                  "layout": "vertical",
+                  "gap": 9,
+                  "width": "fill_container",
+                  "height": "fit_content",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "photo-row-2",
+                      "layout": "horizontal",
+                      "alignItems": "center",
+                      "gap": 16,
+                      "width": "fill_container",
+                      "height": 26,
+                      "children": [
+                        { "type": "text", "id": "photo-name-2", "content": "IMG_062.jpg", "fontFamily": "Inter", "fontSize": 16, "fontWeight": "800", "fill": "#0F172A" },
+                        { "type": "text", "id": "photo-source-2", "content": "来源：Coach 分析", "fontFamily": "Inter", "fontSize": 13, "fill": "#64748B" },
+                        { "type": "frame", "id": "photo-status-2", "layout": "horizontal", "alignItems": "center", "justifyContent": "center", "width": 54, "height": 24, "fill": "#DCFCE7", "cornerRadius": 5, "children": [ { "type": "text", "id": "photo-status-text-2", "content": "已掌握", "fontFamily": "Inter", "fontSize": 12, "fontWeight": "800", "fill": "#16A34A" } ] },
+                        { "type": "text", "id": "photo-link-2", "content": "查看分析记录   〉", "fontFamily": "Inter", "fontSize": 13, "fill": "#475569" }
+                      ]
+                    },
+                    { "type": "text", "id": "photo-note-2", "content": "点评：曝光准确，色彩层次丰富；前景框架构图运用得当，增强了画面纵深感。", "fontFamily": "Inter", "fontSize": 13, "fill": "#475569" },
+                    { "type": "text", "id": "photo-action-2", "content": "后续拍摄建议：继续探索不同框架元素（门窗、树枝、建筑结构）。", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "700", "fill": "#16A34A" }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "photo-feedback-3",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 22,
+              "width": "fill_container",
+              "height": 100,
+              "fill": "#FFFFFF",
+              "cornerRadius": 8,
+              "stroke": { "align": "inside", "thickness": 1, "fill": "#E2E8F0" },
+              "padding": [0, 10, 0, 10],
+              "children": [
+                { "type": "frame", "id": "photo-thumb-3", "width": 114, "height": 80, "cornerRadius": 6, "fill": { "type": "gradient", "gradientType": "linear", "rotation": 130, "colors": [ { "color": "#FED7AA", "position": 0 }, { "color": "#0F172A", "position": 0.58 }, { "color": "#94A3B8", "position": 1 } ] } },
+                {
+                  "type": "frame",
+                  "id": "photo-copy-3",
+                  "layout": "vertical",
+                  "gap": 9,
+                  "width": "fill_container",
+                  "height": "fit_content",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "photo-row-3",
+                      "layout": "horizontal",
+                      "alignItems": "center",
+                      "gap": 16,
+                      "width": "fill_container",
+                      "height": 26,
+                      "children": [
+                        { "type": "text", "id": "photo-name-3", "content": "IMG_078.jpg", "fontFamily": "Inter", "fontSize": 16, "fontWeight": "800", "fill": "#0F172A" },
+                        { "type": "text", "id": "photo-source-3", "content": "来源：Coach 分析", "fontFamily": "Inter", "fontSize": 13, "fill": "#64748B" },
+                        { "type": "frame", "id": "photo-status-3", "layout": "horizontal", "alignItems": "center", "justifyContent": "center", "width": 54, "height": 24, "fill": "#FEF3C7", "cornerRadius": 5, "children": [ { "type": "text", "id": "photo-status-text-3", "content": "待复习", "fontFamily": "Inter", "fontSize": 12, "fontWeight": "800", "fill": "#D97706" } ] },
+                        { "type": "text", "id": "photo-link-3", "content": "查看分析记录   〉", "fontFamily": "Inter", "fontSize": 13, "fill": "#475569" }
+                      ]
+                    },
+                    { "type": "text", "id": "photo-note-3", "content": "点评：人物光影氛围佳，但面部阴影区域偏重，建议使用反光板提高暗部，增强细节。", "fontFamily": "Inter", "fontSize": 13, "fill": "#475569" },
+                    { "type": "text", "id": "photo-action-3", "content": "后续拍摄建议：尝试侧逆光拍摄，保留轮廓光并补光提升立体感。", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "700", "fill": "#16A34A" }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "growth-card",
+          "x": 928,
+          "y": 200,
+          "width": 492,
+          "height": 348,
+          "fill": "#FFFFFF",
+          "cornerRadius": 10,
+          "stroke": { "align": "inside", "thickness": 1, "fill": "#E2E8F0" },
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 22,
+          "children": [
+            {
+              "type": "frame",
+              "id": "growth-title-row",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 10,
+              "width": "fill_container",
+              "height": 24,
+              "children": [
+                { "type": "icon_font", "id": "growth-icon", "iconFontFamily": "lucide", "iconFontName": "chart-column-increasing", "width": 20, "height": 20, "fill": "#0F172A" },
+                { "type": "text", "id": "growth-title", "content": "成长曲线", "fontFamily": "Inter", "fontSize": 18, "fontWeight": "800", "fill": "#0F172A" }
+              ]
+            },
+            { "type": "text", "id": "growth-desc", "content": "拍摄质量评分趋势（基于 CoachAgent 历史反馈）", "fontFamily": "Inter", "fontSize": 14, "fill": "#64748B" },
+            {
+              "type": "frame",
+              "id": "chart-area",
+              "layout": "none",
+              "width": "fill_container",
+              "height": 170,
+              "children": [
+                { "type": "line", "id": "chart-y1", "x": 38, "y": 16, "width": 400, "height": 0, "stroke": { "thickness": 1, "fill": "#E2E8F0" } },
+                { "type": "line", "id": "chart-y2", "x": 38, "y": 58, "width": 400, "height": 0, "stroke": { "thickness": 1, "fill": "#E2E8F0" } },
+                { "type": "line", "id": "chart-y3", "x": 38, "y": 100, "width": 400, "height": 0, "stroke": { "thickness": 1, "fill": "#E2E8F0" } },
+                { "type": "line", "id": "chart-y4", "x": 38, "y": 142, "width": 400, "height": 0, "stroke": { "thickness": 1, "fill": "#E2E8F0" } },
+                { "type": "text", "id": "chart-100", "x": 0, "y": 5, "content": "100", "fontFamily": "Inter", "fontSize": 12, "fill": "#64748B" },
+                { "type": "text", "id": "chart-75", "x": 8, "y": 47, "content": "75", "fontFamily": "Inter", "fontSize": 12, "fill": "#64748B" },
+                { "type": "text", "id": "chart-50", "x": 8, "y": 89, "content": "50", "fontFamily": "Inter", "fontSize": 12, "fill": "#64748B" },
+                { "type": "text", "id": "chart-25", "x": 8, "y": 131, "content": "25", "fontFamily": "Inter", "fontSize": 12, "fill": "#64748B" },
+                { "type": "rectangle", "id": "bar-w1", "x": 60, "y": 94, "width": 32, "height": 48, "fill": "#BFDBFE", "cornerRadius": [4, 4, 0, 0] },
+                { "type": "rectangle", "id": "bar-w2", "x": 118, "y": 78, "width": 32, "height": 64, "fill": "#93C5FD", "cornerRadius": [4, 4, 0, 0] },
+                { "type": "rectangle", "id": "bar-w3", "x": 176, "y": 86, "width": 32, "height": 56, "fill": "#93C5FD", "cornerRadius": [4, 4, 0, 0] },
+                { "type": "rectangle", "id": "bar-w4", "x": 234, "y": 66, "width": 32, "height": 76, "fill": "#60A5FA", "cornerRadius": [4, 4, 0, 0] },
+                { "type": "rectangle", "id": "bar-w5", "x": 292, "y": 54, "width": 32, "height": 88, "fill": "#3B82F6", "cornerRadius": [4, 4, 0, 0] },
+                { "type": "rectangle", "id": "bar-w6", "x": 350, "y": 38, "width": 32, "height": 104, "fill": "#2563EB", "cornerRadius": [4, 4, 0, 0] },
+                { "type": "rectangle", "id": "bar-w7", "x": 408, "y": 18, "width": 32, "height": 124, "fill": "#1D4ED8", "cornerRadius": [4, 4, 0, 0] },
+                { "type": "text", "id": "label-w1", "x": 62, "y": 150, "content": "W1", "fontFamily": "Inter", "fontSize": 12, "fill": "#64748B" },
+                { "type": "text", "id": "label-w2", "x": 120, "y": 150, "content": "W2", "fontFamily": "Inter", "fontSize": 12, "fill": "#64748B" },
+                { "type": "text", "id": "label-w3", "x": 178, "y": 150, "content": "W3", "fontFamily": "Inter", "fontSize": 12, "fill": "#64748B" },
+                { "type": "text", "id": "label-w4", "x": 236, "y": 150, "content": "W4", "fontFamily": "Inter", "fontSize": 12, "fill": "#64748B" },
+                { "type": "text", "id": "label-w5", "x": 294, "y": 150, "content": "W5", "fontFamily": "Inter", "fontSize": 12, "fill": "#64748B" },
+                { "type": "text", "id": "label-w6", "x": 352, "y": 150, "content": "W6", "fontFamily": "Inter", "fontSize": 12, "fill": "#64748B" },
+                { "type": "text", "id": "label-w7", "x": 410, "y": 150, "content": "W7", "fontFamily": "Inter", "fontSize": 12, "fill": "#64748B" }
+              ]
+            },
+            { "type": "text", "id": "growth-summary", "content": "平均得分：72 → 85     +18% ↑", "fontFamily": "Inter", "fontSize": 16, "fontWeight": "800", "fill": "#16A34A" }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "exercise-card",
+          "x": 20,
+          "y": 608,
+          "width": 892,
+          "height": 262,
+          "fill": "#FFFFFF",
+          "cornerRadius": 10,
+          "stroke": { "align": "inside", "thickness": 1, "fill": "#E2E8F0" },
+          "layout": "vertical",
+          "gap": 12,
+          "padding": 18,
+          "children": [
+            {
+              "type": "frame",
+              "id": "exercise-title-row",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 10,
+              "width": "fill_container",
+              "height": 24,
+              "children": [
+                { "type": "icon_font", "id": "exercise-icon", "iconFontFamily": "lucide", "iconFontName": "notebook-pen", "width": 20, "height": 20, "fill": "#0F172A" },
+                { "type": "text", "id": "exercise-title", "content": "练习任务", "fontFamily": "Inter", "fontSize": 18, "fontWeight": "800", "fill": "#0F172A" },
+                { "type": "text", "id": "exercise-col-1", "content": "关联目标/问题", "fontFamily": "Inter", "fontSize": 12, "fill": "#475569", "x": 420 },
+                { "type": "text", "id": "exercise-col-2", "content": "对应问题", "fontFamily": "Inter", "fontSize": 12, "fill": "#475569", "x": 590 }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "exercise-1",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "justifyContent": "space_between",
+              "padding": [0, 10, 0, 10],
+              "width": "fill_container",
+              "height": 58,
+              "fill": "#FFFFFF",
+              "cornerRadius": 8,
+              "stroke": { "align": "inside", "thickness": 1, "fill": "#E2E8F0" },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "exercise-1-main",
+                  "layout": "horizontal",
+                  "alignItems": "center",
+                  "gap": 14,
+                  "width": 384,
+                  "height": 44,
+                  "children": [
+                    { "type": "frame", "id": "exercise-1-icon-wrap", "width": 38, "height": 38, "cornerRadius": 19, "fill": "#22C55E", "layout": "horizontal", "alignItems": "center", "justifyContent": "center", "children": [ { "type": "icon_font", "id": "exercise-1-icon", "iconFontFamily": "lucide", "iconFontName": "mountain", "width": 20, "height": 20, "fill": "#FFFFFF" } ] },
+                    { "type": "text", "id": "exercise-1-copy", "content": "练习 1：用大光圈虚化背景\n拍摄 3 张 f/2.0 以下的人像，主体清晰背景虚化", "fontFamily": "Inter", "fontSize": 14, "fontWeight": "700", "lineHeight": 1.35, "fill": "#0F172A" }
+                  ]
+                },
+                { "type": "text", "id": "exercise-1-target", "content": "背景杂乱影响主体突出", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "700", "fill": "#2563EB" },
+                { "type": "text", "id": "exercise-1-problem", "content": "背景干扰、层次不足", "fontFamily": "Inter", "fontSize": 13, "fill": "#475569" },
+                { "type": "frame", "id": "exercise-1-status", "layout": "horizontal", "alignItems": "center", "justifyContent": "center", "gap": 8, "width": 86, "height": 32, "fill": "#DCFCE7", "cornerRadius": 6, "children": [ { "type": "icon_font", "id": "exercise-1-check", "iconFontFamily": "lucide", "iconFontName": "check", "width": 14, "height": 14, "fill": "#16A34A" }, { "type": "text", "id": "exercise-1-status-text", "content": "已完成", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "800", "fill": "#16A34A" } ] },
+                { "type": "icon_font", "id": "exercise-1-next", "iconFontFamily": "lucide", "iconFontName": "chevron-right", "width": 17, "height": 17, "fill": "#475569" }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "exercise-2",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "justifyContent": "space_between",
+              "padding": [0, 10, 0, 10],
+              "width": "fill_container",
+              "height": 58,
+              "fill": "#FFFFFF",
+              "cornerRadius": 8,
+              "stroke": { "align": "inside", "thickness": 1, "fill": "#E2E8F0" },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "exercise-2-main",
+                  "layout": "horizontal",
+                  "alignItems": "center",
+                  "gap": 14,
+                  "width": 384,
+                  "height": 44,
+                  "children": [
+                    { "type": "frame", "id": "exercise-2-icon-wrap", "width": 38, "height": 38, "cornerRadius": 19, "fill": "#FB923C", "layout": "horizontal", "alignItems": "center", "justifyContent": "center", "children": [ { "type": "icon_font", "id": "exercise-2-icon", "iconFontFamily": "lucide", "iconFontName": "scan", "width": 20, "height": 20, "fill": "#FFFFFF" } ] },
+                    { "type": "text", "id": "exercise-2-copy", "content": "练习 2：前景框架构图\n利用门窗、树枝等元素构建前景框架", "fontFamily": "Inter", "fontSize": 14, "fontWeight": "700", "lineHeight": 1.35, "fill": "#0F172A" }
+                  ]
+                },
+                { "type": "text", "id": "exercise-2-target", "content": "构图层次与纵深不足", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "700", "fill": "#2563EB" },
+                { "type": "text", "id": "exercise-2-problem", "content": "画面平淡、缺少引导线", "fontFamily": "Inter", "fontSize": 13, "fill": "#475569" },
+                { "type": "frame", "id": "exercise-2-status", "layout": "horizontal", "alignItems": "center", "justifyContent": "center", "gap": 8, "width": 86, "height": 32, "fill": "#FFEDD5", "cornerRadius": 6, "children": [ { "type": "icon_font", "id": "exercise-2-clock", "iconFontFamily": "lucide", "iconFontName": "clock", "width": 14, "height": 14, "fill": "#F97316" }, { "type": "text", "id": "exercise-2-status-text", "content": "进行中", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "800", "fill": "#F97316" } ] },
+                { "type": "icon_font", "id": "exercise-2-next", "iconFontFamily": "lucide", "iconFontName": "chevron-right", "width": 17, "height": 17, "fill": "#475569" }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "exercise-3",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "justifyContent": "space_between",
+              "padding": [0, 10, 0, 10],
+              "width": "fill_container",
+              "height": 58,
+              "fill": "#FFFFFF",
+              "cornerRadius": 8,
+              "stroke": { "align": "inside", "thickness": 1, "fill": "#E2E8F0" },
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "exercise-3-main",
+                  "layout": "horizontal",
+                  "alignItems": "center",
+                  "gap": 14,
+                  "width": 384,
+                  "height": 44,
+                  "children": [
+                    { "type": "frame", "id": "exercise-3-icon-wrap", "width": 38, "height": 38, "cornerRadius": 19, "fill": "#A855F7", "layout": "horizontal", "alignItems": "center", "justifyContent": "center", "children": [ { "type": "icon_font", "id": "exercise-3-icon", "iconFontFamily": "lucide", "iconFontName": "mountain-snow", "width": 20, "height": 20, "fill": "#FFFFFF" } ] },
+                    { "type": "text", "id": "exercise-3-copy", "content": "练习 3：黄金时刻光线捕捉\n日出后或日落前 1 小时拍摄，记录暖调光影", "fontFamily": "Inter", "fontSize": 14, "fontWeight": "700", "lineHeight": 1.35, "fill": "#0F172A" }
+                  ]
+                },
+                { "type": "text", "id": "exercise-3-target", "content": "光线时机运用不足", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "700", "fill": "#2563EB" },
+                { "type": "text", "id": "exercise-3-problem", "content": "光线平硬、氛围欠佳", "fontFamily": "Inter", "fontSize": 13, "fill": "#475569" },
+                { "type": "frame", "id": "exercise-3-status", "layout": "horizontal", "alignItems": "center", "justifyContent": "center", "gap": 8, "width": 86, "height": 32, "fill": "#EFF6FF", "cornerRadius": 6, "children": [ { "type": "icon_font", "id": "exercise-3-timer", "iconFontFamily": "lucide", "iconFontName": "circle", "width": 14, "height": 14, "fill": "#2563EB" }, { "type": "text", "id": "exercise-3-status-text", "content": "未开始", "fontFamily": "Inter", "fontSize": 13, "fontWeight": "800", "fill": "#2563EB" } ] },
+                { "type": "icon_font", "id": "exercise-3-next", "iconFontFamily": "lucide", "iconFontName": "chevron-right", "width": 17, "height": 17, "fill": "#475569" }
+              ]
+            },
+            { "type": "text", "id": "view-all-exercises", "content": "查看全部练习任务   〉", "fontFamily": "Inter", "fontSize": 14, "fill": "#334155", "width": "fill_container", "textAlign": "center" }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "skill-card",
+          "x": 928,
+          "y": 564,
+          "width": 492,
+          "height": 306,
+          "fill": "#FFFFFF",
+          "cornerRadius": 10,
+          "stroke": { "align": "inside", "thickness": 1, "fill": "#E2E8F0" },
+          "layout": "vertical",
+          "gap": 18,
+          "padding": 22,
+          "children": [
+            {
+              "type": "frame",
+              "id": "skill-title-row",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 10,
+              "width": "fill_container",
+              "height": 24,
+              "children": [
+                { "type": "icon_font", "id": "skill-icon", "iconFontFamily": "lucide", "iconFontName": "badge-check", "width": 20, "height": 20, "fill": "#0F172A" },
+                { "type": "text", "id": "skill-title", "content": "技能雷达 / 技能画像", "fontFamily": "Inter", "fontSize": 18, "fontWeight": "800", "fill": "#0F172A" }
+              ]
+            },
+            { "type": "text", "id": "skill-desc", "content": "能力评分由历史反馈自动归纳", "fontFamily": "Inter", "fontSize": 14, "fill": "#64748B" },
+            {
+              "type": "frame",
+              "id": "skill-exposure",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 14,
+              "width": "fill_container",
+              "height": 30,
+              "children": [
+                { "type": "icon_font", "id": "skill-exposure-icon", "iconFontFamily": "lucide", "iconFontName": "sun", "width": 19, "height": 19, "fill": "#475569" },
+                { "type": "text", "id": "skill-exposure-label", "content": "曝光控制", "fontFamily": "Inter", "fontSize": 15, "fill": "#334155", "width": 78 },
+                { "type": "frame", "id": "skill-exposure-track", "width": 220, "height": 7, "fill": "#E2E8F0", "cornerRadius": 4, "children": [ { "type": "rectangle", "id": "skill-exposure-fill", "x": 0, "y": 0, "width": 165, "height": 7, "fill": "#2563EB", "cornerRadius": 4 } ] },
+                { "type": "text", "id": "skill-exposure-score", "content": "75%", "fontFamily": "Inter", "fontSize": 14, "fill": "#64748B" }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "skill-composition",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 14,
+              "width": "fill_container",
+              "height": 30,
+              "children": [
+                { "type": "icon_font", "id": "skill-composition-icon", "iconFontFamily": "lucide", "iconFontName": "scan-line", "width": 19, "height": 19, "fill": "#475569" },
+                { "type": "text", "id": "skill-composition-label", "content": "构图能力", "fontFamily": "Inter", "fontSize": 15, "fill": "#334155", "width": 78 },
+                { "type": "frame", "id": "skill-composition-track", "width": 220, "height": 7, "fill": "#E2E8F0", "cornerRadius": 4, "children": [ { "type": "rectangle", "id": "skill-composition-fill", "x": 0, "y": 0, "width": 136, "height": 7, "fill": "#F97316", "cornerRadius": 4 } ] },
+                { "type": "text", "id": "skill-composition-score", "content": "62%", "fontFamily": "Inter", "fontSize": 14, "fill": "#64748B" }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "skill-color",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 14,
+              "width": "fill_container",
+              "height": 30,
+              "children": [
+                { "type": "icon_font", "id": "skill-color-icon", "iconFontFamily": "lucide", "iconFontName": "palette", "width": 19, "height": 19, "fill": "#475569" },
+                { "type": "text", "id": "skill-color-label", "content": "色彩感知", "fontFamily": "Inter", "fontSize": 15, "fill": "#334155", "width": 78 },
+                { "type": "frame", "id": "skill-color-track", "width": 220, "height": 7, "fill": "#E2E8F0", "cornerRadius": 4, "children": [ { "type": "rectangle", "id": "skill-color-fill", "x": 0, "y": 0, "width": 194, "height": 7, "fill": "#22C55E", "cornerRadius": 4 } ] },
+                { "type": "text", "id": "skill-color-score", "content": "88%", "fontFamily": "Inter", "fontSize": 14, "fill": "#64748B" }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "skill-post",
+              "layout": "horizontal",
+              "alignItems": "center",
+              "gap": 14,
+              "width": "fill_container",
+              "height": 30,
+              "children": [
+                { "type": "icon_font", "id": "skill-post-icon", "iconFontFamily": "lucide", "iconFontName": "wand-sparkles", "width": 19, "height": 19, "fill": "#475569" },
+                { "type": "text", "id": "skill-post-label", "content": "后期思路", "fontFamily": "Inter", "fontSize": 15, "fill": "#334155", "width": 78 },
+                { "type": "frame", "id": "skill-post-track", "width": 220, "height": 7, "fill": "#E2E8F0", "cornerRadius": 4, "children": [ { "type": "rectangle", "id": "skill-post-fill", "x": 0, "y": 0, "width": 121, "height": 7, "fill": "#A855F7", "cornerRadius": 4 } ] },
+                { "type": "text", "id": "skill-post-score", "content": "55%", "fontFamily": "Inter", "fontSize": 14, "fill": "#64748B" }
+              ]
+            },
+            { "type": "line", "id": "skill-divider", "width": "fill_container", "height": 0, "stroke": { "thickness": 1, "fill": "#E2E8F0" } },
+            { "type": "text", "id": "skill-more", "content": "查看能力解析与提升建议   〉", "fontFamily": "Inter", "fontSize": 14, "fill": "#475569", "width": "fill_container", "textAlign": "center" }
+          ]
+        }
+      ]
+    }
+  ]
+}

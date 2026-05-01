@@ -1,0 +1,1730 @@
+{
+  "version": "2.11",
+  "children": [
+    {
+      "type": "frame",
+      "id": "root",
+      "x": 0,
+      "y": 0,
+      "name": "Analyze Page - 分析页",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "#F8FAFC",
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "top-nav",
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 56,
+          "fill": "#FFFFFF",
+          "stroke": {
+            "align": "inside",
+            "thickness": {
+              "bottom": 1
+            },
+            "fill": "#E2E8F0"
+          },
+          "padding": [
+            0,
+            20
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "nav-left",
+              "height": 56,
+              "gap": 30,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "brand",
+                  "height": 40,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "brand-camera",
+                      "width": 24,
+                      "height": 24,
+                      "iconFontName": "camera",
+                      "iconFontFamily": "lucide",
+                      "fill": "#0F172A"
+                    },
+                    {
+                      "type": "text",
+                      "id": "brand-text",
+                      "fill": "#0F172A",
+                      "content": "PhotoAI",
+                      "fontFamily": "Inter",
+                      "fontSize": 22,
+                      "fontWeight": "800"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "nav-items",
+                  "height": 40,
+                  "gap": 30,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "nav-dashboard",
+                      "fill": "#64748B",
+                      "content": "工作台",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nav-analyze",
+                      "fill": "#0F172A",
+                      "content": "分析",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nav-assets",
+                      "fill": "#64748B",
+                      "content": "素材库",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nav-plan",
+                      "fill": "#64748B",
+                      "content": "规划",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nav-learning",
+                      "fill": "#64748B",
+                      "content": "学习",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nav-history",
+                      "fill": "#64748B",
+                      "content": "历史",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "nav-right",
+              "height": 56,
+              "gap": 18,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "connection-pill",
+                  "width": 104,
+                  "height": 30,
+                  "fill": "#DCFCE7",
+                  "cornerRadius": 15,
+                  "gap": 8,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "connection-dot",
+                      "fill": "#22C55E",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "connection-label",
+                      "fill": "#15803D",
+                      "content": "已连接",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "icon_font",
+                  "id": "bell",
+                  "width": 20,
+                  "height": 20,
+                  "iconFontName": "bell",
+                  "iconFontFamily": "lucide",
+                  "fill": "#0F172A"
+                },
+                {
+                  "type": "frame",
+                  "id": "avatar",
+                  "height": 36,
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "avatar-circle",
+                      "fill": "#CBD5E1",
+                      "width": 28,
+                      "height": 28
+                    },
+                    {
+                      "type": "text",
+                      "id": "avatar-name",
+                      "fill": "#334155",
+                      "content": "摄影师小陈⌄",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "breadcrumb",
+          "x": 18,
+          "y": 74,
+          "width": 720,
+          "height": 28,
+          "gap": 10,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "bc-back",
+              "fill": "#64748B",
+              "content": "← 返回工作台",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "bc-sep",
+              "fill": "#CBD5E1",
+              "content": "›",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "bc-title",
+              "fill": "#0F172A",
+              "content": "分析任务  job_abc123",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "running-badge",
+              "width": 58,
+              "height": 24,
+              "fill": "#FEF3C7",
+              "cornerRadius": 4,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "running-text",
+                  "fill": "#B45309",
+                  "content": "运行中",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "left-panel",
+          "x": 18,
+          "y": 116,
+          "width": 350,
+          "height": 748,
+          "fill": "#FFFFFF",
+          "cornerRadius": 12,
+          "stroke": {
+            "align": "inside",
+            "thickness": 1,
+            "fill": "#E2E8F0"
+          },
+          "layout": "vertical",
+          "gap": 14,
+          "padding": 16,
+          "children": [
+            {
+              "type": "text",
+              "id": "upload-title",
+              "fill": "#0F172A",
+              "content": "上传与预览",
+              "fontFamily": "Inter",
+              "fontSize": 18,
+              "fontWeight": "800"
+            },
+            {
+              "type": "frame",
+              "id": "main-photo",
+              "clip": true,
+              "width": "fill_container",
+              "height": 240,
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 150,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#FCA5A5",
+                    "position": 0
+                  },
+                  {
+                    "color": "#FDE68A",
+                    "position": 0.28
+                  },
+                  {
+                    "color": "#93C5FD",
+                    "position": 0.58
+                  },
+                  {
+                    "color": "#1E293B",
+                    "position": 1
+                  }
+                ]
+              },
+              "cornerRadius": 8,
+              "children": [
+                {
+                  "type": "polygon",
+                  "polygonCount": 3,
+                  "id": "mountain-1",
+                  "fill": "#CBD5E1CC",
+                  "width": 150,
+                  "height": 90
+                },
+                {
+                  "type": "polygon",
+                  "polygonCount": 3,
+                  "id": "mountain-2",
+                  "fill": "#F8FAFCCC",
+                  "width": 170,
+                  "height": 116
+                },
+                {
+                  "type": "rectangle",
+                  "id": "lake-line",
+                  "fill": "#0F172A55",
+                  "width": 318,
+                  "height": 72
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "thumb-row",
+              "width": "fill_container",
+              "height": 110,
+              "gap": 8,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "thumb-1",
+                  "width": "fill_container",
+                  "height": 110,
+                  "fill": "#DBEAFE",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 2,
+                    "fill": "#3B82F6"
+                  },
+                  "layout": "vertical",
+                  "padding": 8,
+                  "justifyContent": "end",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "thumb-1-label",
+                      "fill": "#2563EB",
+                      "content": "1",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "800"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "thumb-2",
+                  "width": "fill_container",
+                  "height": 110,
+                  "fill": "#E2E8F0",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "padding": 8,
+                  "justifyContent": "end",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "thumb-2-label",
+                      "fill": "#334155",
+                      "content": "2",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "800"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "thumb-3",
+                  "width": "fill_container",
+                  "height": 110,
+                  "fill": "#E2E8F0",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "padding": 8,
+                  "justifyContent": "end",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "thumb-3-label",
+                      "fill": "#334155",
+                      "content": "3",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "800"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "exif-card",
+              "width": "fill_container",
+              "height": 72,
+              "fill": "#F8FAFC",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 8,
+              "padding": 14,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "exif-title",
+                  "fill": "#0F172A",
+                  "content": "EXIF 信息  ⓘ",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "exif-row",
+                  "fill": "#64748B",
+                  "content": "ISO 200 / f8 / 1/125s / 35mm",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "preference-card",
+              "width": "fill_container",
+              "height": 138,
+              "fill": "#F8FAFC",
+              "cornerRadius": 8,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 14,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "preference-title",
+                  "fill": "#334155",
+                  "content": "分析偏好（可选）",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "frame",
+                  "id": "preference-input",
+                  "width": "fill_container",
+                  "height": 86,
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 6,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#CBD5E1"
+                  },
+                  "layout": "vertical",
+                  "padding": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "preference-placeholder",
+                      "fill": "#94A3B8",
+                      "content": "例如：偏好风光片的色彩增强，保留天空细节",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "qXV8A",
+              "name": "Upload Actions",
+              "width": "fill_container",
+              "height": 38,
+              "gap": 10,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Be4Yf",
+                  "name": "reupload",
+                  "width": "fill_container",
+                  "height": 38,
+                  "fill": "#F8FAFC",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#CBD5E1"
+                  },
+                  "gap": 6,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "NVLLw",
+                      "name": "reIcon",
+                      "width": 15,
+                      "height": 15,
+                      "iconFontName": "upload",
+                      "iconFontFamily": "lucide",
+                      "fill": "#334155"
+                    },
+                    {
+                      "type": "text",
+                      "id": "zlTJ0",
+                      "name": "reText",
+                      "fill": "#334155",
+                      "content": "重新上传",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "D8TBoS",
+                  "name": "cancel",
+                  "width": "fill_container",
+                  "height": 38,
+                  "fill": "#FEF2F2",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#FCA5A5"
+                  },
+                  "gap": 6,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "hNFmM",
+                      "name": "canIcon",
+                      "width": 15,
+                      "height": 15,
+                      "iconFontName": "trash-2",
+                      "iconFontFamily": "lucide",
+                      "fill": "#DC2626"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nAyYA",
+                      "name": "canText",
+                      "fill": "#DC2626",
+                      "content": "取消任务",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "800"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "center-panel",
+          "x": 384,
+          "y": 116,
+          "width": 500,
+          "height": 748,
+          "fill": "#FFFFFF",
+          "cornerRadius": 12,
+          "stroke": {
+            "align": "inside",
+            "thickness": 1,
+            "fill": "#E2E8F0"
+          },
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "console-header",
+              "width": "fill_container",
+              "height": 24,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "console-title",
+                  "fill": "#0F172A",
+                  "content": "实时分析控制台 ⓘ",
+                  "fontFamily": "Inter",
+                  "fontSize": 18,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "text",
+                  "id": "collapse-text",
+                  "fill": "#64748B",
+                  "content": "⌃ 收起",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "post-progress-card",
+              "width": "fill_container",
+              "height": 164,
+              "fill": "#EFF6FF",
+              "cornerRadius": 10,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#93C5FD"
+              },
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "post-progress-head",
+                  "width": "fill_container",
+                  "height": 28,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "post-agent-title",
+                      "fill": "#2563EB",
+                      "content": "● Post Agent（后期分析）",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "post-agent-progress",
+                      "fill": "#2563EB",
+                      "content": "78%     运行中",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "post-progress-track",
+                  "width": "fill_container",
+                  "height": 6,
+                  "fill": "#DBEAFE",
+                  "cornerRadius": 3,
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "post-progress-fill",
+                      "fill": "#3B82F6",
+                      "width": 332,
+                      "height": 6
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "post-progress-message",
+                  "fill": "#2563EB",
+                  "content": "正在分析色彩与曝光...",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "post-steps",
+                  "fill": "#334155",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "✓ 曝光 完成       ● 色彩 进行中       ○ 后期方向 等待中       ○ 参数建议 等待中",
+                  "lineHeight": 1.5,
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "coach-progress-card",
+              "width": "fill_container",
+              "height": 164,
+              "fill": "#F0FDF4",
+              "cornerRadius": 10,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#86EFAC"
+              },
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "coach-progress-head",
+                  "width": "fill_container",
+                  "height": 28,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "coach-agent-title",
+                      "fill": "#16A34A",
+                      "content": "● Coach Agent（学习教练）",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "text",
+                      "id": "coach-agent-progress",
+                      "fill": "#16A34A",
+                      "content": "100%     已完成",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "coach-progress-track",
+                  "width": "fill_container",
+                  "height": 6,
+                  "fill": "#DCFCE7",
+                  "cornerRadius": 3,
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "coach-progress-fill",
+                      "fill": "#22C55E",
+                      "width": 438,
+                      "height": 6
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "coach-progress-message",
+                  "fill": "#16A34A",
+                  "content": "已完成构图与主体表达分析",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "coach-steps",
+                  "fill": "#334155",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "✓ 构图 完成       ✓ 优点问题 完成       ✓ 拍摄建议 完成       ✓ 练习任务 完成",
+                  "lineHeight": 1.5,
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "stream-card",
+              "width": "fill_container",
+              "height": 312,
+              "fill": "#FFFFFF",
+              "cornerRadius": 10,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#E2E8F0"
+              },
+              "layout": "vertical",
+              "padding": 14,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "stream-header",
+                  "width": "fill_container",
+                  "height": 32,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "stream-title",
+                      "fill": "#0F172A",
+                      "content": "💬 实时输出流",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "800"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "M4W5QJ",
+                      "name": "Stream Controls",
+                      "height": 28,
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "G2JXS",
+                          "name": "clear",
+                          "fill": "#94A3B8",
+                          "content": "清空",
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "HecBB",
+                          "name": "Pause Button",
+                          "width": 28,
+                          "height": 28,
+                          "fill": "#FFFFFF",
+                          "cornerRadius": 6,
+                          "stroke": {
+                            "align": "inside",
+                            "thickness": 1,
+                            "fill": "#CBD5E1"
+                          },
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon_font",
+                              "id": "fcxXt",
+                              "name": "pauseIcon",
+                              "width": 15,
+                              "height": 15,
+                              "iconFontName": "pause",
+                              "iconFontFamily": "lucide",
+                              "fill": "#64748B"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "O8Bfu",
+                  "name": "Stream List",
+                  "clip": true,
+                  "width": 440,
+                  "height": 218,
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#E2E8F0"
+                  },
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "id": "sQDCt",
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": 0,
+                      "name": "bg1",
+                      "fill": "#F8FAFC",
+                      "width": 440,
+                      "height": 36
+                    },
+                    {
+                      "type": "text",
+                      "id": "lv8cb",
+                      "layoutPosition": "absolute",
+                      "x": 12,
+                      "y": 10,
+                      "name": "t1",
+                      "fill": "#94A3B8",
+                      "content": "10:24:31",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "y9YZpM",
+                      "layoutPosition": "absolute",
+                      "x": 76,
+                      "y": 10,
+                      "name": "a1",
+                      "fill": "#2563EB",
+                      "content": "[Post]",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "V3WXqU",
+                      "layoutPosition": "absolute",
+                      "x": 130,
+                      "y": 10,
+                      "name": "c1",
+                      "fill": "#475569",
+                      "content": "正在分析全局曝光分布与高光压制情况...",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "d4mhwD",
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": 36,
+                      "name": "bg2",
+                      "fill": "#FFFFFF",
+                      "width": 440,
+                      "height": 36,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": {
+                          "top": 1
+                        },
+                        "fill": "#E2E8F0"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "kEVIW",
+                      "layoutPosition": "absolute",
+                      "x": 12,
+                      "y": 46,
+                      "name": "t2",
+                      "fill": "#94A3B8",
+                      "content": "10:24:33",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "bvf7e",
+                      "layoutPosition": "absolute",
+                      "x": 76,
+                      "y": 46,
+                      "name": "a2",
+                      "fill": "#16A34A",
+                      "content": "[Coach]",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "F7gF9",
+                      "layoutPosition": "absolute",
+                      "x": 140,
+                      "y": 46,
+                      "name": "c2",
+                      "fill": "#475569",
+                      "content": "构图主体清晰，前景树木形成良好框架。",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "OXulG",
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": 72,
+                      "name": "bg3",
+                      "fill": "#F8FAFC",
+                      "width": 440,
+                      "height": 36,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": {
+                          "top": 1
+                        },
+                        "fill": "#E2E8F0"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "ezHVb",
+                      "layoutPosition": "absolute",
+                      "x": 12,
+                      "y": 82,
+                      "name": "t3",
+                      "fill": "#94A3B8",
+                      "content": "10:24:37",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "RhcsW",
+                      "layoutPosition": "absolute",
+                      "x": 76,
+                      "y": 82,
+                      "name": "a3",
+                      "fill": "#2563EB",
+                      "content": "[Post]",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Seev8",
+                      "layoutPosition": "absolute",
+                      "x": 130,
+                      "y": 82,
+                      "name": "c3",
+                      "fill": "#475569",
+                      "content": "色彩偏冷，建议增加暖色平衡，增强日出氛围。",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "y72h9",
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": 108,
+                      "name": "bg4",
+                      "fill": "#FFFFFF",
+                      "width": 440,
+                      "height": 36,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": {
+                          "top": 1
+                        },
+                        "fill": "#E2E8F0"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "WI5Nz",
+                      "layoutPosition": "absolute",
+                      "x": 12,
+                      "y": 118,
+                      "name": "t4",
+                      "fill": "#94A3B8",
+                      "content": "10:24:41",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ptk6g",
+                      "layoutPosition": "absolute",
+                      "x": 76,
+                      "y": 118,
+                      "name": "a4",
+                      "fill": "#16A34A",
+                      "content": "[Coach]",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "dbzC7",
+                      "layoutPosition": "absolute",
+                      "x": 140,
+                      "y": 118,
+                      "name": "c4",
+                      "fill": "#475569",
+                      "content": "天空层次丰富，云彩质感出色 👍",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "A4sF6d",
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": 144,
+                      "name": "bg5",
+                      "fill": "#F8FAFC",
+                      "width": 440,
+                      "height": 36,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": {
+                          "top": 1
+                        },
+                        "fill": "#E2E8F0"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "D54Ii",
+                      "layoutPosition": "absolute",
+                      "x": 12,
+                      "y": 154,
+                      "name": "t5",
+                      "fill": "#94A3B8",
+                      "content": "10:24:45",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "k72Wns",
+                      "layoutPosition": "absolute",
+                      "x": 76,
+                      "y": 154,
+                      "name": "a5",
+                      "fill": "#2563EB",
+                      "content": "[Post]",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "yM2Kg",
+                      "layoutPosition": "absolute",
+                      "x": 130,
+                      "y": 154,
+                      "name": "c5",
+                      "fill": "#475569",
+                      "content": "推荐压暗前景并提升阴影对比，突出山体光影。",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "NdLEg",
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": 180,
+                      "name": "bg6",
+                      "fill": "#FFFFFF",
+                      "width": 440,
+                      "height": 38,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": {
+                          "top": 1
+                        },
+                        "fill": "#E2E8F0"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "v783N",
+                      "layoutPosition": "absolute",
+                      "x": 12,
+                      "y": 190,
+                      "name": "t6",
+                      "fill": "#94A3B8",
+                      "content": "10:24:49",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "d0OTY",
+                      "layoutPosition": "absolute",
+                      "x": 76,
+                      "y": 190,
+                      "name": "a6",
+                      "fill": "#16A34A",
+                      "content": "[Coach]",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "IxKnq",
+                      "layoutPosition": "absolute",
+                      "x": 140,
+                      "y": 190,
+                      "name": "c6",
+                      "fill": "#475569",
+                      "content": "建议下次尝试更低机位，强化前景纵深。",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "stream-footer",
+                  "fill": "#64748B",
+                  "content": "●  SSE 连接稳定 · 双 Agent 并行运行中",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "right-panel",
+          "x": 900,
+          "y": 116,
+          "width": 522,
+          "height": 748,
+          "fill": "#FFFFFF",
+          "cornerRadius": 12,
+          "stroke": {
+            "align": "inside",
+            "thickness": 1,
+            "fill": "#E2E8F0"
+          },
+          "layout": "vertical",
+          "gap": 14,
+          "padding": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "result-header",
+              "width": "fill_container",
+              "height": 34,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "result-title",
+                  "fill": "#0F172A",
+                  "content": "分析结果",
+                  "fontFamily": "Inter",
+                  "fontSize": 18,
+                  "fontWeight": "800"
+                },
+                {
+                  "type": "frame",
+                  "id": "export-report",
+                  "width": 92,
+                  "height": 30,
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 6,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#CBD5E1"
+                  },
+                  "gap": 8,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "export-icon",
+                      "width": 15,
+                      "height": 15,
+                      "iconFontName": "file-down",
+                      "iconFontFamily": "lucide",
+                      "fill": "#334155"
+                    },
+                    {
+                      "type": "text",
+                      "id": "export-label",
+                      "fill": "#334155",
+                      "content": "导出报告",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "result-tabs",
+              "width": "fill_container",
+              "height": 36,
+              "gap": 10,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "post-tab",
+                  "width": "fill_container",
+                  "height": 36,
+                  "fill": "#EFF6FF",
+                  "cornerRadius": 6,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#93C5FD"
+                  },
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "post-tab-label",
+                      "fill": "#2563EB",
+                      "content": "后期建议",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "800"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "coach-tab",
+                  "width": "fill_container",
+                  "height": 36,
+                  "fill": "#F0FDF4",
+                  "cornerRadius": 6,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#86EFAC"
+                  },
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "coach-tab-label",
+                      "fill": "#16A34A",
+                      "content": "学习反馈",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "800"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "summary-banner",
+              "width": "fill_container",
+              "height": 38,
+              "fill": "#FEF3C7",
+              "cornerRadius": 8,
+              "gap": 8,
+              "padding": [
+                0,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "summary-star",
+                  "width": 17,
+                  "height": 17,
+                  "iconFontName": "star",
+                  "iconFontFamily": "lucide",
+                  "fill": "#F59E0B"
+                },
+                {
+                  "type": "text",
+                  "id": "summary-text",
+                  "fill": "#B45309",
+                  "content": "本次结论：适合压暗背景并强化主体，建议下次尝试更低机位。",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "result-columns",
+              "width": "fill_container",
+              "height": 560,
+              "gap": 10,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "post-result-card",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 10,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#93C5FD"
+                  },
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 14,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "post-result-direction",
+                      "fill": "#1D4ED8",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "◎ 总体方向\\n• 压暗整体环境，强化山体主体与日出色彩。",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "post-result-exposure",
+                      "fill": "#334155",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "◎ 曝光\\n• 降低整体曝光，保留高光细节。\\n• 适度提升阴影，增强山体层次。",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "post-result-color",
+                      "fill": "#334155",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "◎ 色彩\\n• 白平衡偏冷，略微增加暖色温。\\n• 提升橙色与黄色饱和度，增强氛围。",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "post-result-params",
+                      "fill": "#334155",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "◎ 参数建议\\n曝光 -0.3EV  对比度 +15\\n高光 -40  阴影 +25\\n饱和度 +10  清晰度 +10",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "post-result-warning",
+                      "fill": "#334155",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "◎ 注意事项\\n• 避免过度提亮天空，防止色彩断层。",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "coach-result-card",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "fill": "#FFFFFF",
+                  "cornerRadius": 10,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#86EFAC"
+                  },
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 14,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "coach-result-strength",
+                      "fill": "#166534",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "◎ 优点\\n✓ 主体明确，山体光影出色。\\n✓ 前景树木增加了层次与空间感。",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "coach-result-improve",
+                      "fill": "#334155",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "◎ 可改进点\\n• 机位稍高，前景占比偏小。\\n• 前景较暗，存在视觉重量不足。",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "coach-result-next",
+                      "fill": "#334155",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "◎ 下次怎么拍\\n• 尝试更低机位，扩大前景占比。\\n• 利用前景引导线增强纵深感。\\n• 注意日出前色温变化，提前曝光。",
+                      "lineHeight": 1.55,
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "practice-task",
+                      "width": "fill_container",
+                      "height": 106,
+                      "fill": "#F5F3FF",
+                      "cornerRadius": 8,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 12,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "practice-title",
+                          "fill": "#7C3AED",
+                          "content": "◎ 练习任务    挑战",
+                          "fontFamily": "Inter",
+                          "fontSize": 13,
+                          "fontWeight": "800"
+                        },
+                        {
+                          "type": "text",
+                          "id": "practice-desc",
+                          "fill": "#475569",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "拍摄一组日出风光，尝试不同机位与前景组合，记录光线变化。",
+                          "lineHeight": 1.45,
+                          "fontFamily": "Inter",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "result-actions",
+              "width": "fill_container",
+              "height": 40,
+              "gap": 10,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "save-result",
+                  "width": 100,
+                  "height": 40,
+                  "fill": "#0F172A",
+                  "cornerRadius": 8,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "save-result-label",
+                      "fill": "#FFFFFF",
+                      "content": "保存结果",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "800"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "rerun",
+                  "width": 100,
+                  "height": 40,
+                  "fill": "#F8FAFC",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#CBD5E1"
+                  },
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "rerun-label",
+                      "fill": "#334155",
+                      "content": "重新分析",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "go-plan",
+                  "width": 110,
+                  "height": 40,
+                  "fill": "#FFF7ED",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#FED7AA"
+                  },
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "go-plan-label",
+                      "fill": "#EA580C",
+                      "content": "拍摄规划",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "800"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "send-assets",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "#EFF6FF",
+                  "cornerRadius": 8,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#BFDBFE"
+                  },
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "send-assets-label",
+                      "fill": "#2563EB",
+                      "content": "送去素材库",
+                      "fontFamily": "Inter",
+                      "fontSize": 13,
+                      "fontWeight": "800"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

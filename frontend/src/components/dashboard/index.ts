@@ -1,0 +1,6 @@
+export { HeroSection } from "./HeroSection"
+export { CapabilityCard } from "./CapabilityCard"
+export { WorkflowSteps } from "./WorkflowSteps"
+export { RecentTaskList } from "./RecentTaskList"
+export { StatsCard } from "./StatsCard"
+export { DashboardStatsGrid } from "./DashboardStatsGrid"
