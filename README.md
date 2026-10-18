@@ -57,7 +57,7 @@ flowchart LR
 
 - **[在线体验](https://photo-agent-hub9388.netlify.app/)**：通过预置猫图体验分析、修图、素材保存与学习反馈，也可操作西湖摄影规划。
 - **[建议如何落地到修图](docs/post-to-sliders.md)**：Post 建议如何转换为受支持的滑杆初值，让用户预览、微调并应用；不支持的参数明确跳过。
-- **[评测与改进案例](evaluations/001-shadow-direction/README.md)**：围绕阴影方向和不支持参数被替代的问题，查看执行记录、评测用例及验证方法。
+- **[测试、评测与问题复盘](docs/testing/README.md)**：汇总 197 条自动化用例、10 个模块的测试方法、结果与结论，附完整用例索引、专项检查和 Agent 失败案例复盘。
 
 <details>
 <summary>开发与部署文档</summary>

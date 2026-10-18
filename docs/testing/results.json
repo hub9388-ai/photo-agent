@@ -1,0 +1,1556 @@
+{
+  "verified_date": "2026-10-18",
+  "timezone": "Asia/Shanghai",
+  "generated_at": "2026-10-18T20:23:02+08:00",
+  "code_revision": "0e0259c81601e958ce32c6da86de73e33e28cb07",
+  "scope": "Repository-owned automated tests; parameterized items count separately; subtests and scripts excluded from case total.",
+  "total": 197,
+  "status_counts": {
+    "passed": 197
+  },
+  "main_subtests_excluded": 11,
+  "test_files": 39,
+  "result_times": {
+    "main-results.xml": "2026-10-18T20:18:52+08:00",
+    "retouch-results.json": "2026-10-18T20:19:03+08:00",
+    "evaluator-results.json": "2026-10-18T20:19:04+08:00",
+    "browser-results.json": "2026-10-18T20:19:28+08:00"
+  },
+  "modules": [
+    {
+      "id": "agent",
+      "name": "Agent 协作与上下文",
+      "cases": 33,
+      "passed": 33
+    },
+    {
+      "id": "provider",
+      "name": "模型与外部服务接入",
+      "cases": 21,
+      "passed": 21
+    },
+    {
+      "id": "contract",
+      "name": "输出协议与界面文案",
+      "cases": 26,
+      "passed": 26
+    },
+    {
+      "id": "api",
+      "name": "后端 API、任务与媒体",
+      "cases": 20,
+      "passed": 20
+    },
+    {
+      "id": "data",
+      "name": "素材、规划与数据存储",
+      "cases": 21,
+      "passed": 21
+    },
+    {
+      "id": "ops",
+      "name": "事件日志与部署保护",
+      "cases": 8,
+      "passed": 8
+    },
+    {
+      "id": "advice",
+      "name": "后期建议转换与原图传递",
+      "cases": 22,
+      "passed": 22
+    },
+    {
+      "id": "retouch",
+      "name": "人物保护、笔刷与修图执行",
+      "cases": 32,
+      "passed": 32
+    },
+    {
+      "id": "eval",
+      "name": "Agent 执行语义评测判定器",
+      "cases": 6,
+      "passed": 6
+    },
+    {
+      "id": "browser",
+      "name": "浏览器产品流程",
+      "cases": 8,
+      "passed": 8
+    }
+  ],
+  "evidence_sha256": {
+    "main-results.xml": "4f2ab17c92c27609abec672f962b1642036faa60131bd6ec050f8dc715f1bb86",
+    "retouch-results.json": "03bc343e6a7406e5da175c628aae9e4f44c5cd95165f163964e02236e6a43b20",
+    "evaluator-results.json": "be0df06fb68a72eef5dbc522b158c10ba44dcbe06df9543982852aca03a1ccd3",
+    "browser-results.json": "4cfc5a3b44de3178e21cb971401a7ccbe21545e2f80cc198007902ebed95d87c"
+  },
+  "test_source_sha256": {
+    "backend/tests/test_agent_request_contract.py": "bef5406f771e64485741b88560bb0418b35df63d1abc9cf48f6287fcb0a78a95",
+    "backend/tests/test_agent_services_stage5.py": "e7a507235605a2b2f4b3fd252d0c1138ec8a51243bfe744e201438913b25fad1",
+    "backend/tests/test_api_contract.py": "a39ffd840a1b09b8496f6716dfebfae1823cc7613ab1fb32d04313e16cc45160",
+    "backend/tests/test_asset_score_api.py": "19107857bbbadbe5c2c494fbb6cdcbe76943e8931175c06cd7cbec770e11b87f",
+    "backend/tests/test_asset_stage7.py": "922a0be2fdaaf6b3507833703d699e07ca210b4274371b2baf73f36e2aaac8a5",
+    "backend/tests/test_contract_models.py": "95bc2a8f2bb52b0ee9de29f41f4a62df1b00b678c0c64c5f7755fad659f3a18b",
+    "backend/tests/test_health.py": "6000b57f086a995823c8857606135e4f17be3cfe88eef34eb7f03df50d8e819c",
+    "backend/tests/test_job_system.py": "0f8eeab3d6dca4a259d72a6812e11f4d4433e8426d4b4445b9f07f01b687acaa",
+    "backend/tests/test_legacy_imports.py": "18625183c88bf34af68d897a598f1b8a06d07f2941d14ce83aa79e4ae2228811",
+    "backend/tests/test_media_upload.py": "3ba1a1c888f28f6f3c9a408c9d73c96ddfdba55eaaf712ddec8ffe34e9987605",
+    "backend/tests/test_plan_stage8.py": "2d64d17c336fde508450e0a0806f3f9cf2974bb465491844f5f216658b8a1bdf",
+    "backend/tests/test_retouch_advice.py": "c6752ab7ddab25cada77e7f0b5ce0687951538a72d593f5c212b50af7834106b",
+    "backend/tests/test_retouch_source.py": "927a7c1f589d0199a046d4fd55e346c3cd049e87677ee3dedc70cf086e9a6ed2",
+    "backend/tests/test_settings.py": "f5fa145237379d4646001aa3b5db7f49a28c391be16f9dbe100fc2048b8325b3",
+    "backend/tests/test_skills_mcp_stage85.py": "d6dde95f38b90d2a3969ecee8f65cdb285f6baf11d6e461849fd0080aa73e7e9",
+    "backend/tests/test_stage6_errors.py": "c8a1463eb533ef2eca24f868d41a0dcf30570230c0a4d6d0793fd8ea4db42182",
+    "evaluations/001-shadow-direction/test_evaluate.py": "19cb6359a2e15510257cd4e2e5c6355dff7e1527528327f92920ed176e486619",
+    "frontend/tests/product-demo.spec.ts": "6afa5042aef5ed359821c7d4c95898dc120d76d7d1a97dba62b0dde5953c5c17",
+    "tests/test_asset_recovery.py": "62cb3f54282b604857c6648cc294d0a2a5b795cd08678554a2c8d8b71f82f5c0",
+    "tests/test_cli.py": "45d401199005e488bd4cacc4e14cce605b1d983398c2525b2618e2a076440c0e",
+    "tests/test_coach_lifecycle.py": "0a8d2708568b7f60ba9bb970216b0fd085a07fa851867619b0fb6629cb4651f6",
+    "tests/test_demo_deployment.py": "ee19e406005ef6cc816ed28550717736475690a0abc74d19b2909433d1dcd2a4",
+    "tests/test_end_to_end.py": "d86c235e1ed7660e4045dcd5e007e56b84ddf788b3b2e446eb22213d26dc17b8",
+    "tests/test_entrypoints.py": "0c8220a4db0bee92595ea5d001cb6ed1012c6fd2b945f47788e3ee6c34e35a19",
+    "tests/test_events.py": "f65dd7324971d4d7b65f207bf695caa5fae27c72bd2f86b2bd0bb90821ce610e",
+    "tests/test_handoff.py": "d2491e2fd71f27f8f90c5c9fa935cd8b0eb37eafe2f3c790072b6277bdfd4a46",
+    "tests/test_plan_followup.py": "ef05118d2065d75af4915b167e4e54780b0d2bcf2c34f16aad4763719cd4d4d5",
+    "tests/test_post_chat.py": "23e9154546495599274b4f69ea6fe47cf7f2a600ca439a1c51256e3ea3b58e3b",
+    "tests/test_protocol.py": "baab6a2580a1349384c7674dfccb9baa51bffd7865bbe9189e9b1bb3cff1192d",
+    "tests/test_provider_adapter.py": "087bbe52b67ab97605cb2e6ccdac2f65519a8251f618ed6fee85d2aef8f6c272",
+    "tests/test_qwen_image_config.py": "4cecaa60b4e611c0e1b788855acb27962dae88eaad02972b3d432e8e4f85d14c",
+    "tests/test_retouch_adjust_draft.py": "ce58ef61885286c48252e6c532375ec052bde6fef4a91a2f8e9003b4a49d5338",
+    "tests/test_retouch_brush.py": "eca83d123c0a94196378ec05bbd486129a3db2fc03714be1c01f2709fbba50b0",
+    "tests/test_retouch_live.py": "d8e9a6dac38af7327d696cb0ad6c5a5d1bc4a46dd5eccd8627c3d810d78d14f0",
+    "tests/test_retouch_output_limits.py": "2d1aac015d9fb368f4b13b7f031a155356e2bb90f290ec259c30d0337a85cc1c",
+    "tests/test_retouch_portrait.py": "2808f5c80f73cfcd4ea4073c13cd06cb30e75153383ff7eea8c459b08b84121d",
+    "tests/test_runtime.py": "020e3fb5d28f16cf18d0395f0ab21e9ef755a4ae578f2b895e25c25e7e12439e",
+    "tests/test_storage.py": "0fc996ee0ca372dd9991deb2e543dfa9aa8579e669154d24aa4d6cdd2505aa5a",
+    "tests/test_trace.py": "01a2a4f8ac878daa450edafb13f8710af15138f2f99fbcb12c76379a4aa162d1"
+  },
+  "supplementary_script_runs": [
+    {
+      "script": "scripts/check_analysis_presentation.cjs",
+      "status": "passed"
+    },
+    {
+      "script": "scripts/check_post_advice_ui.cjs",
+      "status": "passed"
+    },
+    {
+      "script": "scripts/check_retouch_brush_ui.cjs",
+      "status": "passed"
+    },
+    {
+      "script": "scripts/check_retouch_minimal.py core",
+      "status": "passed"
+    }
+  ],
+  "evaluation_replays": {
+    "historical": {
+      "trace_kind": "historical_observation",
+      "tool_execution_status": "succeeded",
+      "semantic_contract_passed": false,
+      "failed_checks": [
+        "direction.shadows",
+        "no_substitution.brightness",
+        "no_substitution.sharpness",
+        "unsupported.Blacks2012",
+        "unsupported.Dehaze"
+      ],
+      "check_count": 15
+    },
+    "synthetic": {
+      "trace_kind": "synthetic_judge_test_only",
+      "tool_execution_status": "not_executed",
+      "semantic_contract_passed": true,
+      "failed_checks": [],
+      "check_count": 15
+    },
+    "converter": {
+      "trace_kind": "production_converter_output_not_executed",
+      "tool_execution_status": "not_executed",
+      "semantic_contract_passed": true,
+      "failed_checks": [],
+      "check_count": 15
+    }
+  },
+  "cases": [
+    {
+      "file": "tests/test_asset_recovery.py",
+      "id": "tests.test_asset_recovery.AssetRecoveryTests::test_asset_search_single_result_becomes_current_focus",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_asset_recovery.py",
+      "id": "tests.test_asset_recovery.AssetRecoveryTests::test_main_restores_handoff_selection_after_post_read_failure",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_asset_recovery.py",
+      "id": "tests.test_asset_recovery.AssetRecoveryTests::test_main_reuses_single_search_result_for_asset_followup_post",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_cli.py",
+      "id": "tests.test_cli.CLIRenderingTests::test_post_input_tips_render_to_sink",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_cli.py",
+      "id": "tests.test_cli.CLIRenderingTests::test_unified_entry_banner_renders_to_sink",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_cli.py",
+      "id": "tests.test_cli.UserFacingTextTests::test_asset_subset_uses_grade_labels_numbering_and_score_sort",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_cli.py",
+      "id": "tests.test_cli.UserFacingTextTests::test_key_chinese_outputs_do_not_contain_mojibake_fragments",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_cli.py",
+      "id": "tests.test_cli.UserFacingTextTests::test_scene_preview_puts_grade_breakdown_on_new_line",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_cli.py",
+      "id": "tests.test_cli.UserFacingTextTests::test_v2_instruction_uses_shared_response_delimiter",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_cli.py",
+      "id": "tests.test_cli.UserFacingTextTests::test_v2_render_response_uses_clean_chinese_headings",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_cli.py",
+      "id": "tests.test_cli.UserFacingTextTests::test_v3_planning_headers_are_clean",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_cli.py",
+      "id": "tests.test_cli.UserFacingTextTests::test_v3_render_planning_response_uses_clean_chinese_headers",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_coach_lifecycle.py",
+      "id": "tests.test_coach_lifecycle.CoachLifecycleTests::test_lesson_history_moves_from_assigned_to_completed",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_demo_deployment.py",
+      "id": "tests.test_demo_deployment.BudgetTests::test_global_atomic_budget_shared_across_connections",
+      "status": "passed",
+      "suite": "main",
+      "module": "ops"
+    },
+    {
+      "file": "tests/test_demo_deployment.py",
+      "id": "tests.test_demo_deployment.MiddlewareTests::test_counted_attempts_block_but_get_and_brush_still_work",
+      "status": "passed",
+      "suite": "main",
+      "module": "ops"
+    },
+    {
+      "file": "tests/test_demo_deployment.py",
+      "id": "tests.test_demo_deployment.MiddlewareTests::test_database_failure_does_not_permit_paid_calls",
+      "status": "passed",
+      "suite": "main",
+      "module": "ops"
+    },
+    {
+      "file": "tests/test_demo_deployment.py",
+      "id": "tests.test_demo_deployment.PreflightTests::test_template_rejected_and_error_messages_hide_values",
+      "status": "passed",
+      "suite": "main",
+      "module": "ops"
+    },
+    {
+      "file": "tests/test_demo_deployment.py",
+      "id": "tests.test_demo_deployment.PreflightTests::test_valid_synthetic_configuration",
+      "status": "passed",
+      "suite": "main",
+      "module": "ops"
+    },
+    {
+      "file": "tests/test_end_to_end.py",
+      "id": "tests.test_end_to_end.UnifiedEntryEndToEndTests::test_main_completes_asset_to_post_handoff_and_reuses_current_image_context",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_end_to_end.py",
+      "id": "tests.test_end_to_end.UnifiedEntryEndToEndTests::test_main_imports_project_and_renders_index_summary",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_entrypoints.py",
+      "id": "tests.test_entrypoints.EntrypointTests::test_asset_handoff_selection_builds_post_media_request",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_entrypoints.py",
+      "id": "tests.test_entrypoints.EntrypointTests::test_entry_module_override_prefers_asset_for_media_requests",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_entrypoints.py",
+      "id": "tests.test_entrypoints.EntrypointTests::test_entry_module_override_prefers_post_for_promptless_media",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_entrypoints.py",
+      "id": "tests.test_entrypoints.EntrypointTests::test_entry_module_override_respects_explicit_prompt",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_entrypoints.py",
+      "id": "tests.test_entrypoints.EntrypointTests::test_photo_v1_main_delegates_to_unified_entry",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_entrypoints.py",
+      "id": "tests.test_entrypoints.EntrypointTests::test_photo_v2_main_delegates_to_unified_entry",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_entrypoints.py",
+      "id": "tests.test_entrypoints.EntrypointTests::test_photo_v3_main_delegates_to_unified_entry",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_entrypoints.py",
+      "id": "tests.test_entrypoints.EntrypointTests::test_photo_v4_main_delegates_to_unified_entry",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_entrypoints.py",
+      "id": "tests.test_entrypoints.EntrypointTests::test_promptless_defaults_do_not_override_explicit_prompt",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_entrypoints.py",
+      "id": "tests.test_entrypoints.EntrypointTests::test_promptless_single_directory_defaults_to_asset",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_entrypoints.py",
+      "id": "tests.test_entrypoints.EntrypointTests::test_promptless_single_image_defaults_to_post",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_entrypoints.py",
+      "id": "tests.test_entrypoints.EntrypointTests::test_rule_routing_covers_all_modules",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_events.py",
+      "id": "tests.test_events.EventTests::test_print_streaming_can_write_into_buffer_sink",
+      "status": "passed",
+      "suite": "main",
+      "module": "ops"
+    },
+    {
+      "file": "tests/test_handoff.py",
+      "id": "tests.test_handoff.SharedUtilsTests::test_asset_fallback_prefers_handoff_over_grade_view",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_handoff.py",
+      "id": "tests.test_handoff.SharedUtilsTests::test_normalize_string_list_deduplicates_and_trims",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_handoff.py",
+      "id": "tests.test_handoff.SharedUtilsTests::test_resolve_asset_intent_prefers_explicit_grade_command",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_handoff.py",
+      "id": "tests.test_handoff.HandoffOrchestrationTests::test_consume_pending_handoff_accepts_selected_assets",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_handoff.py",
+      "id": "tests.test_handoff.HandoffOrchestrationTests::test_consume_pending_handoff_reports_invalid_selection",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_handoff.py",
+      "id": "tests.test_handoff.HandoffOrchestrationTests::test_handoff_selection_response_uses_grade_labels",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_plan_followup.py",
+      "id": "tests.test_plan_followup.PlanningFollowupStateTests::test_should_not_resume_planning_followup_for_explicit_post_switch",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_plan_followup.py",
+      "id": "tests.test_plan_followup.PlanningFollowupStateTests::test_should_resume_planning_followup_for_plan_choice",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_plan_followup.py",
+      "id": "tests.test_plan_followup.UnifiedEntryPlanningFollowupTests::test_main_keeps_plan_followup_inside_planning_module",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_plan_followup.py",
+      "id": "tests.test_plan_followup.UnifiedEntryPlanningFollowupTests::test_non_plan_switch_clears_pending_plan_followup",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_post_chat.py",
+      "id": "tests.test_post_chat.ChatStreamingFallbackTests::test_chat_streaming_preserves_non_thinking_bad_request",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_post_chat.py",
+      "id": "tests.test_post_chat.ChatStreamingFallbackTests::test_chat_streaming_retries_rate_limit_once",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_post_chat.py",
+      "id": "tests.test_post_chat.ChatStreamingFallbackTests::test_chat_streaming_retries_without_thinking_on_budget_error",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "tests/test_protocol.py",
+      "id": "tests.test_protocol.ProtocolTests::test_split_response_sections_with_delimiter",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_protocol.py",
+      "id": "tests.test_protocol.ProtocolTests::test_split_response_sections_with_json_anchor",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_protocol.py",
+      "id": "tests.test_protocol.ProtocolTests::test_split_response_sections_without_structured_tail",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_protocol.py",
+      "id": "tests.test_protocol.ProtocolTests::test_v1_analysis_payload_parses_tail",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_protocol.py",
+      "id": "tests.test_protocol.ProtocolTests::test_v2_split_and_parse_half_stream_payload",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_protocol.py",
+      "id": "tests.test_protocol.ProtocolTests::test_v3_extract_planning_brief_falls_back_to_user_text_when_model_returns_non_json",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_protocol.py",
+      "id": "tests.test_protocol.ProtocolTests::test_v3_planning_payload_parses_tail",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_protocol.py",
+      "id": "tests.test_protocol.ProtocolTests::test_v3_truncated_payload_salvages_first_complete_plan",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "tests/test_provider_adapter.py",
+      "id": "tests.test_provider_adapter.ProviderAdapterTests::test_search_places_normalizes_amap_payload",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_provider_adapter.py",
+      "id": "tests.test_provider_adapter.ProviderAdapterTests::test_search_reference_links_parses_html_results",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_qwen_image_config.py",
+      "id": "tests.test_qwen_image_config.QwenConfigurationTests::test_configure_does_not_activate_generation_or_change_database",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_qwen_image_config.py",
+      "id": "tests.test_qwen_image_config.QwenConfigurationTests::test_refuses_ambiguous_explicit_keys",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_qwen_image_config.py",
+      "id": "tests.test_qwen_image_config.QwenConfigurationTests::test_rejects_untrusted_destination_before_sending_credentials",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_qwen_image_config.py",
+      "id": "tests.test_qwen_image_config.QwenConfigurationTests::test_repeated_legacy_variables_do_not_select_relay_or_deepseek_key",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_runtime.py",
+      "id": "tests.test_runtime.RuntimeTests::test_create_anthropic_client_prefers_auth_token_mode",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_runtime.py",
+      "id": "tests.test_runtime.RuntimeTests::test_deepseek_ignores_legacy_endpoint_model_and_auth",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_runtime.py",
+      "id": "tests.test_runtime.RuntimeTests::test_deepseek_model_override",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_runtime.py",
+      "id": "tests.test_runtime.RuntimeTests::test_deepseek_rejects_incompatible_or_untrusted_endpoints",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_runtime.py",
+      "id": "tests.test_runtime.RuntimeTests::test_deepseek_request_does_not_send_stale_or_empty_bearer_header",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_runtime.py",
+      "id": "tests.test_runtime.RuntimeTests::test_ensure_anthropic_credentials_accepts_auth_token",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_runtime.py",
+      "id": "tests.test_runtime.RuntimeTests::test_ensure_required_env_exits_early_when_missing",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_runtime.py",
+      "id": "tests.test_runtime.RuntimeTests::test_explicit_deepseek_never_falls_back_to_legacy_key",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_runtime.py",
+      "id": "tests.test_runtime.RuntimeTests::test_resolve_env_value_falls_back_to_persistent_env",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_storage.py",
+      "id": "tests.test_storage.StorageTests::test_asset_index_document_redacts_absolute_paths_and_rehydrates_on_load",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "tests/test_storage.py",
+      "id": "tests.test_storage.StorageTests::test_cleanup_json_cache_keeps_latest_files",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "tests/test_storage.py",
+      "id": "tests.test_storage.StorageTests::test_migrate_profile_payload_supports_legacy_flat_json",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "tests/test_storage.py",
+      "id": "tests.test_storage.StorageTests::test_resolve_asset_index_dir_copies_legacy_cache_files",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "tests/test_storage.py",
+      "id": "tests.test_storage.StorageTests::test_resolve_profile_path_copies_legacy_profile_into_user_data_dir",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "tests/test_storage.py",
+      "id": "tests.test_storage.AssetIndexSinkTests::test_index_project_assets_reports_progress_to_sink",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "tests/test_storage.py",
+      "id": "tests.test_storage.AssetIndexSinkTests::test_index_project_assets_reuses_cached_records_on_second_run",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "tests/test_storage.py",
+      "id": "tests.test_storage.AssetIndexSinkTests::test_index_project_assets_uses_parallel_rebuild_for_multiple_files",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "tests/test_trace.py",
+      "id": "tests.test_trace.TraceTests::test_trace_event_records_truncated_user_input_summary",
+      "status": "passed",
+      "suite": "main",
+      "module": "ops"
+    },
+    {
+      "file": "tests/test_trace.py",
+      "id": "tests.test_trace.TraceTests::test_trace_event_writes_jsonl_record",
+      "status": "passed",
+      "suite": "main",
+      "module": "ops"
+    },
+    {
+      "file": "backend/tests/test_agent_request_contract.py",
+      "id": "backend.tests.test_agent_request_contract::test_agent_request_union_uses_agent_discriminator",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "backend/tests/test_agent_request_contract.py",
+      "id": "backend.tests.test_agent_request_contract::test_agent_requests_do_not_expose_legacy_runtime_fields",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "backend/tests/test_agent_request_contract.py",
+      "id": "backend.tests.test_agent_request_contract::test_post_agent_request_requires_media_ids",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "backend/tests/test_agent_request_contract.py",
+      "id": "backend.tests.test_agent_request_contract::test_coach_photo_feedback_requires_media_ids_but_text_qa_does_not",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "backend/tests/test_agent_request_contract.py",
+      "id": "backend.tests.test_agent_request_contract::test_asset_non_chat_modes_require_project_or_media_input",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "backend/tests/test_agent_services_stage5.py",
+      "id": "backend.tests.test_agent_services_stage5::test_post_agent_service_maps_request_to_legacy_call",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "backend/tests/test_agent_services_stage5.py",
+      "id": "backend.tests.test_agent_services_stage5::test_coach_agent_service_maps_request_to_legacy_call",
+      "status": "passed",
+      "suite": "main",
+      "module": "agent"
+    },
+    {
+      "file": "backend/tests/test_api_contract.py",
+      "id": "backend.tests.test_api_contract::test_openapi_exposes_job_and_handoff_contracts",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_asset_score_api.py",
+      "id": "backend.tests.test_asset_score_api::test_asset_score_uses_asset_agent_visual_pipeline_and_detects_exact_duplicates",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "backend/tests/test_asset_score_api.py",
+      "id": "backend.tests.test_asset_score_api::test_asset_score_rejects_missing_media_id",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "backend/tests/test_asset_stage7.py",
+      "id": "backend.tests.test_asset_stage7::test_asset_agent_service_maps_import_request_to_legacy_index",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "backend/tests/test_asset_stage7.py",
+      "id": "backend.tests.test_asset_stage7::test_import_project_assets_creates_asset_job_and_lists_filtered_assets",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "backend/tests/test_asset_stage7.py",
+      "id": "backend.tests.test_asset_stage7::test_asset_handoff_to_post_creates_target_job_with_registered_media",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "backend/tests/test_asset_stage7.py",
+      "id": "backend.tests.test_asset_stage7::test_project_import_rejects_directory_outside_allowed_roots",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "backend/tests/test_asset_stage7.py",
+      "id": "backend.tests.test_asset_stage7::test_sse_replay_contains_asset_events",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "backend/tests/test_contract_models.py",
+      "id": "backend.tests.test_contract_models::test_agent_job_supports_partial_completed_status",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "backend/tests/test_contract_models.py",
+      "id": "backend.tests.test_contract_models::test_model_default_factories_are_not_shared",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "backend/tests/test_contract_models.py",
+      "id": "backend.tests.test_contract_models::test_event_seq_must_be_positive",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "backend/tests/test_contract_models.py",
+      "id": "backend.tests.test_contract_models::test_event_persistence_rules_skip_delta_and_duplicate_progress_step",
+      "status": "passed",
+      "suite": "main",
+      "module": "contract"
+    },
+    {
+      "file": "backend/tests/test_health.py",
+      "id": "backend.tests.test_health::test_health_returns_ok",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_job_system.py",
+      "id": "backend.tests.test_job_system::test_create_job_runs_post_and_coach_services_in_parallel",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_job_system.py",
+      "id": "backend.tests.test_job_system::test_job_becomes_partial_completed_when_one_agent_fails",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_job_system.py",
+      "id": "backend.tests.test_job_system::test_retry_agent_updates_latest_result_and_job_status",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_job_system.py",
+      "id": "backend.tests.test_job_system::test_list_jobs_can_filter_by_media_id",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_job_system.py",
+      "id": "backend.tests.test_job_system::test_results_api_exposes_finished_agent_before_whole_job_completes",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_job_system.py",
+      "id": "backend.tests.test_job_system::test_job_becomes_failed_when_post_and_coach_both_fail",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_job_system.py",
+      "id": "backend.tests.test_job_system::test_event_store_skips_delta_and_duplicate_progress",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_job_system.py",
+      "id": "backend.tests.test_job_system::test_sse_replays_persisted_events",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_legacy_imports.py",
+      "id": "backend.tests.test_legacy_imports::test_agent_services_import_legacy_modules",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "backend/tests/test_media_upload.py",
+      "id": "backend.tests.test_media_upload::test_upload_media_saves_original_preview_thumbnail_and_record",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_media_upload.py",
+      "id": "backend.tests.test_media_upload::test_upload_media_rejects_unsupported_file_type",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_media_upload.py",
+      "id": "backend.tests.test_media_upload::test_history_media_lookup_returns_matching_upload_and_missing_is_404",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_media_upload.py",
+      "id": "backend.tests.test_media_upload::test_upload_media_rejects_file_over_size_limit",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_plan_stage8.py",
+      "id": "backend.tests.test_plan_stage8::test_plan_service_returns_clarification_without_model_call",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "backend/tests/test_plan_stage8.py",
+      "id": "backend.tests.test_plan_stage8::test_plan_service_forwards_raw_requirements_and_hard_constraints",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "backend/tests/test_plan_stage8.py",
+      "id": "backend.tests.test_plan_stage8::test_plan_run_api_creates_explicit_trip_planning_job",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "backend/tests/test_plan_stage8.py",
+      "id": "backend.tests.test_plan_stage8::test_plan_run_api_is_friendly_wrapper_over_job_system",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "backend/tests/test_plan_stage8.py",
+      "id": "backend.tests.test_plan_stage8::test_plan_run_rejects_missing_reference_media_id",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "backend/tests/test_plan_stage8.py",
+      "id": "backend.tests.test_plan_stage8::test_photo_review_job_does_not_trigger_plan_by_default",
+      "status": "passed",
+      "suite": "main",
+      "module": "data"
+    },
+    {
+      "file": "backend/tests/test_retouch_advice.py",
+      "id": "backend.tests.test_retouch_advice::test_shadow_direction_and_no_substitution",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_advice.py",
+      "id": "backend.tests.test_retouch_advice::test_invalid_values_not_guessed[True]",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_advice.py",
+      "id": "backend.tests.test_retouch_advice::test_invalid_values_not_guessed[-10]",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_advice.py",
+      "id": "backend.tests.test_retouch_advice::test_invalid_values_not_guessed[-10 ~ -20]",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_advice.py",
+      "id": "backend.tests.test_retouch_advice::test_invalid_values_not_guessed[nan]",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_advice.py",
+      "id": "backend.tests.test_retouch_advice::test_invalid_values_not_guessed[inf]",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_advice.py",
+      "id": "backend.tests.test_retouch_advice::test_invalid_values_not_guessed[-101]",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_advice.py",
+      "id": "backend.tests.test_retouch_advice::test_invalid_values_not_guessed[None]",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_advice.py",
+      "id": "backend.tests.test_retouch_advice::test_neutral_direction_and_explicit_limits",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_advice.py",
+      "id": "backend.tests.test_retouch_advice::test_saved_result_provenance",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_advice.py",
+      "id": "backend.tests.test_retouch_advice::test_wrong_photo_batch_failed_or_unstructured_refused[ids0-succeeded-None]",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_advice.py",
+      "id": "backend.tests.test_retouch_advice::test_wrong_photo_batch_failed_or_unstructured_refused[ids1-succeeded-None]",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_advice.py",
+      "id": "backend.tests.test_retouch_advice::test_wrong_photo_batch_failed_or_unstructured_refused[ids2-failed-None]",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_advice.py",
+      "id": "backend.tests.test_retouch_advice::test_wrong_photo_batch_failed_or_unstructured_refused[ids3-succeeded-payload3]",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_source.py",
+      "id": "backend.tests.test_retouch_source::test_retouch_exports_original_without_reencoding",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_source.py",
+      "id": "backend.tests.test_retouch_source::test_retouch_falls_back_to_preview_for_unsupported_original",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_source.py",
+      "id": "backend.tests.test_retouch_source::test_retouch_does_not_export_paths_outside_media_root",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_source.py",
+      "id": "backend.tests.test_retouch_source::test_retouch_rejects_oversized_original",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_retouch_source.py",
+      "id": "backend.tests.test_retouch_source::test_retouch_rejects_invalid_and_missing_ids",
+      "status": "passed",
+      "suite": "main",
+      "module": "advice"
+    },
+    {
+      "file": "backend/tests/test_settings.py",
+      "id": "backend.tests.test_settings::test_candidate_env_files_include_repo_root_before_backend",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "backend/tests/test_skills_mcp_stage85.py",
+      "id": "backend.tests.test_skills_mcp_stage85::test_post_agent_degrades_when_legacy_skills_loader_fails",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "backend/tests/test_skills_mcp_stage85.py",
+      "id": "backend.tests.test_skills_mcp_stage85::test_coach_agent_degrades_when_legacy_skills_missing",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "backend/tests/test_skills_mcp_stage85.py",
+      "id": "backend.tests.test_skills_mcp_stage85::test_plan_agent_degrades_when_planning_skills_missing",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "backend/tests/test_skills_mcp_stage85.py",
+      "id": "backend.tests.test_skills_mcp_stage85::test_openapi_does_not_expose_skills_or_mcp_endpoints",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "backend/tests/test_stage6_errors.py",
+      "id": "backend.tests.test_stage6_errors::test_job_not_found_uses_structured_error_response",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_stage6_errors.py",
+      "id": "backend.tests.test_stage6_errors::test_validation_error_uses_structured_error_response",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_stage6_errors.py",
+      "id": "backend.tests.test_stage6_errors::test_create_job_rejects_missing_media_id_before_agent_runs",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_stage6_errors.py",
+      "id": "backend.tests.test_stage6_errors::test_create_job_rejects_post_coach_job_without_media_ids",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_stage6_errors.py",
+      "id": "backend.tests.test_stage6_errors::test_media_upload_error_uses_media_error_code",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "backend/tests/test_stage6_errors.py",
+      "id": "backend.tests.test_stage6_errors::test_handoff_missing_source_job_uses_structured_error_code",
+      "status": "passed",
+      "suite": "main",
+      "module": "api"
+    },
+    {
+      "file": "tests/test_retouch_adjust_draft.py",
+      "id": "test_retouch_adjust_draft.AdjustDraftTests.test_audit_fields_hidden_from_planner_and_bounded",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "advice"
+    },
+    {
+      "file": "tests/test_retouch_adjust_draft.py",
+      "id": "test_retouch_adjust_draft.AdjustDraftTests.test_provenance_is_audit_only_and_exact_user_values_reach_pixels",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "advice"
+    },
+    {
+      "file": "tests/test_retouch_adjust_draft.py",
+      "id": "test_retouch_adjust_draft.AdjustDraftTests.test_stale_revision_rejected_before_read_or_write",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "advice"
+    },
+    {
+      "file": "tests/test_retouch_brush.py",
+      "id": "test_retouch_brush.BrushTests.test_paint_does_not_fill_unpainted_triangle",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_brush.py",
+      "id": "test_retouch_brush.BrushTests.test_protocol_defaults_and_invalid_controls",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_brush.py",
+      "id": "test_retouch_brush.BrushTests.test_resized_candidate_hole_in_selected_region_is_rejected",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_brush.py",
+      "id": "test_retouch_brush.BrushTests.test_single_click_width_and_empty_eraser",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_brush.py",
+      "id": "test_retouch_brush.BrushTests.test_subtract_removes_only_brush_and_keeps_base_immutable",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_brush.py",
+      "id": "test_retouch_brush.BrushTests.test_transparency_outside_selection_is_discarded",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_live.py",
+      "id": "test_retouch_live.LiveAdapterTests.test_invalid_image_fails_before_submission",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_live.py",
+      "id": "test_retouch_live.LiveAdapterTests.test_original_jpeg_is_not_mislabeled_as_png",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_live.py",
+      "id": "test_retouch_live.LiveAdapterTests.test_oversized_opaque_image_gets_transport_copy_at_same_size",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_live.py",
+      "id": "test_retouch_live.LiveAdapterTests.test_oversized_transparent_image_preserves_alpha",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_live.py",
+      "id": "test_retouch_live.LiveAdapterTests.test_planner_has_bounded_timeout_and_no_automatic_retry",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_live.py",
+      "id": "test_retouch_live.LiveAdapterTests.test_supported_payload_keeps_single_output_and_native_size_syntax",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_live.py",
+      "id": "test_retouch_live.LiveAdapterTests.test_unsupported_negative_prompt_rejected_before_network",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_live.py",
+      "id": "test_retouch_live.PlannerFailureTests.test_actual_edit_instruction_still_reaches_planner",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_live.py",
+      "id": "test_retouch_live.PlannerFailureTests.test_execution_check_does_not_plan_another_edit",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_live.py",
+      "id": "test_retouch_live.PlannerFailureTests.test_rollback_does_not_read_expired_record_and_saves_failure",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_live.py",
+      "id": "test_retouch_live.PlannerFailureTests.test_unclassified_failure_also_survives_rollback",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_live.py",
+      "id": "test_retouch_live.PlannerFailureTests.test_wrapped_provider_errors_and_timeout_are_safe",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_output_limits.py",
+      "id": "test_retouch_output_limits.OutputLimitTests.test_internal_limit_and_pixel_guard_still_apply",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_output_limits.py",
+      "id": "test_retouch_output_limits.OutputLimitTests.test_internal_lossless_result_keeps_size_bytes_and_alpha",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_output_limits.py",
+      "id": "test_retouch_output_limits.OutputLimitTests.test_oversize_upload_never_reaches_storage",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_output_limits.py",
+      "id": "test_retouch_output_limits.OutputLimitTests.test_rejected_result_reports_specific_error",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_output_limits.py",
+      "id": "test_retouch_output_limits.OutputLimitTests.test_upload_still_rejects_over_20_mib",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_portrait.py",
+      "id": "test_retouch_portrait.PortraitTests.test_body_intent_and_read_only_check_are_distinct",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_portrait.py",
+      "id": "test_retouch_portrait.PortraitTests.test_corner_and_auto_split_blocked_before_any_processing",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_portrait.py",
+      "id": "test_retouch_portrait.PortraitTests.test_direct_tool_stale_selection_blocks_before_provider",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_portrait.py",
+      "id": "test_retouch_portrait.PortraitTests.test_mask_must_be_local_nonempty_and_current_size",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_portrait.py",
+      "id": "test_retouch_portrait.PortraitTests.test_no_selection_saves_explanation_without_model_or_tool",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_portrait.py",
+      "id": "test_retouch_portrait.PortraitTests.test_original_source_rejects_candidate_split_and_transformed_layers",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_portrait.py",
+      "id": "test_retouch_portrait.PortraitTests.test_selected_body_edit_waits_for_confirmation_without_planner",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_portrait.py",
+      "id": "test_retouch_portrait.PortraitTests.test_strict_composite_preserves_all_unselected_pixels",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_portrait.py",
+      "id": "test_retouch_portrait.PortraitTests.test_transparent_candidate_not_written_or_adopted",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "evaluations/001-shadow-direction/test_evaluate.py",
+      "id": "test_evaluate.EvaluationTests.test_direction_and_neutral_shadow_cannot_pass",
+      "status": "passed",
+      "suite": "evaluator",
+      "module": "eval"
+    },
+    {
+      "file": "evaluations/001-shadow-direction/test_evaluate.py",
+      "id": "test_evaluate.EvaluationTests.test_explanation_without_correct_execution_does_not_pass",
+      "status": "passed",
+      "suite": "evaluator",
+      "module": "eval"
+    },
+    {
+      "file": "evaluations/001-shadow-direction/test_evaluate.py",
+      "id": "test_evaluate.EvaluationTests.test_historical_successful_tool_is_semantic_failure",
+      "status": "passed",
+      "suite": "evaluator",
+      "module": "eval"
+    },
+    {
+      "file": "evaluations/001-shadow-direction/test_evaluate.py",
+      "id": "test_evaluate.EvaluationTests.test_missing_duplicate_unknown_and_out_of_range_calls_fail",
+      "status": "passed",
+      "suite": "evaluator",
+      "module": "eval"
+    },
+    {
+      "file": "evaluations/001-shadow-direction/test_evaluate.py",
+      "id": "test_evaluate.EvaluationTests.test_skipped_without_reason_does_not_pass",
+      "status": "passed",
+      "suite": "evaluator",
+      "module": "eval"
+    },
+    {
+      "file": "evaluations/001-shadow-direction/test_evaluate.py",
+      "id": "test_evaluate.EvaluationTests.test_synthetic_positive_control_is_only_a_judge_test",
+      "status": "passed",
+      "suite": "evaluator",
+      "module": "eval"
+    },
+    {
+      "file": "frontend/tests/product-demo.spec.ts",
+      "id": "original three-column analysis → assets → learning → history",
+      "status": "passed",
+      "suite": "browser",
+      "module": "browser"
+    },
+    {
+      "file": "frontend/tests/product-demo.spec.ts",
+      "id": "original editor sends and confirms round-cat preset, saves into asset library",
+      "status": "passed",
+      "suite": "browser",
+      "module": "browser"
+    },
+    {
+      "file": "frontend/tests/product-demo.spec.ts",
+      "id": "original planning form generates West Lake variants and supports adoption",
+      "status": "passed",
+      "suite": "browser",
+      "module": "browser"
+    },
+    {
+      "file": "frontend/tests/product-demo.spec.ts",
+      "id": "unsupported generation shows feedback and preserves canvas",
+      "status": "passed",
+      "suite": "browser",
+      "module": "browser"
+    },
+    {
+      "file": "frontend/tests/product-demo.spec.ts",
+      "id": "static pages and editor deep link work without backend",
+      "status": "passed",
+      "suite": "browser",
+      "module": "browser"
+    },
+    {
+      "file": "frontend/tests/product-demo.spec.ts",
+      "id": "original sliders apply to actual pixels, undo and export ZIP work",
+      "status": "passed",
+      "suite": "browser",
+      "module": "browser"
+    },
+    {
+      "file": "frontend/tests/product-demo.spec.ts",
+      "id": "style selection affects preset advice and reset leaves real-mode caches untouched",
+      "status": "passed",
+      "suite": "browser",
+      "module": "browser"
+    },
+    {
+      "file": "frontend/tests/product-demo.spec.ts",
+      "id": "unsupported preferences and destinations do not receive unrelated fixture results",
+      "status": "passed",
+      "suite": "browser",
+      "module": "browser"
+    }
+  ]
+}
