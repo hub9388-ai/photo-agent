@@ -239,7 +239,7 @@ def generate(out):
             lines += [f'- `{c["id"]}` — {c["status"]}' for c in cases]
             lines += ['', '</details>', '']
     target.mkdir(parents=True, exist_ok=True)
-    (target / 'case-inventory.md').write_text('\n'.join(lines) + '\n', encoding='utf8')
+    (target / 'case-inventory.md').write_text('\n'.join(lines).rstrip() + '\n', encoding='utf8')
     print(json.dumps({'total': len(rows), 'status_counts': dict(counts), 'test_files': len(actual_files), 'modules': modules}, ensure_ascii=False, indent=2))
     return 0 if all(r['status'] == 'passed' for r in rows) else 1
 
