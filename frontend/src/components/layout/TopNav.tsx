@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { DEMO_MODE } from "@/lib/demo/config"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -33,7 +34,7 @@ export function TopNav() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white">
-      <div className="flex h-14 items-center px-4 md:px-6">
+      <div className="flex min-h-14 flex-wrap items-center gap-y-2 px-4 py-2 md:px-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 mr-8">
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-slate-900 text-white">
@@ -43,7 +44,7 @@ export function TopNav() {
         </Link>
 
         {/* Navigation */}
-        <nav className="flex items-center gap-1 flex-1">
+        <nav aria-label="主导航" className="order-last flex w-full items-center gap-1 overflow-x-auto md:order-none md:w-auto md:flex-1">
           {navItems.map((item) => {
             const isActive = pathname === item.path || pathname.startsWith(`${item.path}/`)
             const Icon = item.icon
@@ -53,7 +54,7 @@ export function TopNav() {
                 key={item.path}
                 href={item.path}
                 className={cn(
-                  "relative flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors",
+                  "relative flex shrink-0 items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors",
                   isActive
                     ? "text-slate-900 bg-slate-100"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -77,9 +78,10 @@ export function TopNav() {
             className="hidden md:flex items-center gap-1.5 bg-green-50 text-green-700 border-green-200"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-            已连接
+            {DEMO_MODE ? "演示模式" : "已连接"}
           </Badge>
 
+          {!DEMO_MODE && <>
           {/* Search */}
           <Button variant="ghost" size="icon" className="text-slate-600">
             <Search className="w-5 h-5" />
@@ -95,6 +97,7 @@ export function TopNav() {
           <Button variant="ghost" size="icon" className="rounded-full bg-slate-100">
             <User className="w-5 h-5 text-slate-600" />
           </Button>
+          </>}
         </div>
       </div>
     </header>

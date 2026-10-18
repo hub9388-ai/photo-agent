@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:demo": "node scripts/build-demo.mjs",
+    "test:demo": "playwright test --config playwright.demo.config.ts",
+    "preview:demo": "node scripts/serve-demo.mjs",
     "start": "next start",
     "lint": "eslint"
   },
@@ -26,6 +29,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

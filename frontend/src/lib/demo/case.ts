@@ -1,0 +1,46 @@
+export const catCase = {
+  id: "street-cat",
+  title: "街角的三花猫",
+  original: "/demo/cat-original.png",
+  rounded: "/demo/cat-rounded.png",
+  preference: "自然、可爱的宠物摄影，保留街头生活感",
+  editPrompt: "让猫咪的脸颊和身体略微圆润，眼神更好奇；保留毛色花纹、坐姿与街景，保持真实摄影质感。",
+  issues: [
+    "自行车与电动车占据背景，黄色文字较抢眼，主体轮廓附近略显拥挤。",
+    "猫脸比路面暗，眼神是画面重点，可以适度提起暗部。",
+    "下方路面留白较多；若裁剪，应保留尾巴和脚掌完整。",
+  ],
+  strengths: [
+    "坐姿松弛、表情警觉，形成有趣的反差，具有生活气息。",
+    "拍摄视角接近猫的高度，能建立视线交流。",
+    "橙黑毛色与背景蓝色自行车形成色彩呼应。",
+  ],
+  improvements: [
+    "下次左右移动半步，让车轮、车牌与猫头错开，先通过机位减少干扰。",
+    "等待猫看向镜头，连拍保留自然表情；避免突然靠近打扰它。",
+    "将焦点放在近侧眼睛，检查毛发和白毛亮部，再决定是否调整曝光。",
+  ],
+  practice: "用三个不同机位拍摄同一主体，比较头部背景是否干净；保留眼神清晰、四肢完整的一张。",
+}
+
+export const controls = [
+  { key: "brightness", label: "亮度", initial: 4, min: -30, max: 30 },
+  { key: "contrast", label: "对比度", initial: 8, min: -30, max: 30 },
+  { key: "saturation", label: "饱和度", initial: -5, min: -30, max: 30 },
+] as const
+export type Adjustments = Record<(typeof controls)[number]["key"], number>
+export const neutral: Adjustments = { brightness: 0, contrast: 0, saturation: 0 }
+export const suggested: Adjustments = { brightness: 4, contrast: 8, saturation: -5 }
+// Shared by preview and export. Browser filters are not RAW/EV conversions.
+export function adjustmentFilter(values: Adjustments) {
+  return `brightness(${1 + values.brightness / 100}) contrast(${1 + values.contrast / 100}) saturate(${1 + values.saturation / 100})`
+}
+
+export const westLakePlan = [
+  { time: "08:00–09:30", place: "断桥 → 白堤", task: "以堤岸和桥线组织画面，练习远景、人物与湖面的层次。", equipment: "24–35mm；先观察光线方向，避免把人物拍成无细节的剪影。" },
+  { time: "09:30–11:00", place: "孤山及周边湖岸", task: "用树枝、门洞或廊柱做前景，拍摄一组有留白的湖景。", equipment: "35–50mm；改变站位，避开杂乱背景。" },
+  { time: "11:00–13:30", place: "午餐与休息", task: "整理上午照片，每组各选一张，检查水平线、焦点和过曝区域。", equipment: "预留休息时间；强光时转拍阴影中的局部细节。" },
+  { time: "13:30–15:00", place: "曲院风荷周边", task: "拍摄水面倒影、曲线与植物细节，以现场季节景观为准。", equipment: "50–85mm；无荷花时改拍树影与水纹，不依赖季节限定景物。" },
+  { time: "15:00–16:30", place: "苏堤 · 量力选择步行段", task: "用桥、树与行人建立尺度，完成一张环境人像或街头观察。", equipment: "35–50mm；体力不足时缩短线路，提前安排返程。" },
+  { time: "傍晚 · 随季节调整", place: "就近湖岸收尾", task: "观察侧光与水面明暗，完成同一场景的亮调、暗调两张练习。", equipment: "不预设日落时间；出发前另查天气、开放信息与交通。" },
+]

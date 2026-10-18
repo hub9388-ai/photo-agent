@@ -6,6 +6,8 @@ import {
   DashboardStatsGrid,
 } from "@/components/dashboard"
 import { Camera, FolderOpen, MapPin, GraduationCap } from "lucide-react"
+import { DEMO_MODE } from "@/lib/demo/config"
+import { DemoApp } from "@/components/demo/DemoApp"
 
 const capabilities = [
   {
@@ -39,6 +41,7 @@ const capabilities = [
 ]
 
 export default function DashboardPage() {
+  if (DEMO_MODE) return <DemoApp />
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Hero Section */}

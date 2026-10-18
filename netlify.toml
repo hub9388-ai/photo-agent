@@ -1,0 +1,17 @@
+[build]
+  base = "frontend"
+  command = "npm run build:demo"
+  publish = "out-demo"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_PUBLIC_DEMO_MODE = "1"
+  NEXT_PUBLIC_API_MODE = "mock"
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"

@@ -14,6 +14,10 @@
 
 ## 体验方式
 
+**浏览器演示**：使用预置三花猫案例，串起 Post / Coach 分析、调色微调、圆润效果对比、素材保存与摄影练习；另提供杭州西湖一日摄影规划。分析和生成结果为预置示例，本地调色与图片导出可以实际操作。详见[前端演示与 Netlify 部署](docs/frontend-demo.md)。
+
+**完整系统**：运行后端后，可上传自己的照片并使用真实 Agent 与生成式编辑。
+
 本地启动说明见下方文档。建议按以下顺序体验：
 
 1. 上传一张用于演示的照片，填写风格偏好并运行 Post / Coach 分析。
@@ -49,6 +53,7 @@ flowchart LR
 
 ## 关键文档
 
+- [纯前端演示：案例、体验与 Netlify 部署](docs/frontend-demo.md)
 - [完整演示部署包与资源清单](deploy/full-demo/README.md)
 - [修图服务集成说明](docs/retouch-integration.md)
 - [Post 建议 → 调色滑杆](docs/post-to-sliders.md)
