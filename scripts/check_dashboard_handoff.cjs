@@ -20,6 +20,8 @@ async function main() {
     const page = await browser.newPage()
     const apiRequests = []
     const errors = []
+    let editorReady = true
+    let sourceFails = false
     page.on('pageerror', error => errors.push(error.message))
     await page.route('**/api/**', async route => {
       const url = new URL(route.request().url())
@@ -31,6 +33,7 @@ async function main() {
         return route.fulfill({ json: advice, headers })
       }
       assert.equal(url.pathname, `/api/media/${mediaId}/retouch-source`, 'Unexpected API request')
+      if (sourceFails) return route.fulfill({ status: 503, body: 'Unavailable', headers })
       return route.fulfill({ body: original, contentType: 'image/png', headers: { ...headers,
         'X-Retouch-Source': 'original', 'X-Retouch-Filename': 'original.png',
         'Access-Control-Expose-Headers': 'X-Retouch-Source, X-Retouch-Filename' } })
@@ -38,21 +41,28 @@ async function main() {
     await page.route('**/photoai-import', route => route.fulfill({ contentType: 'text/html', body: `<!doctype html><title>Controlled editor</title><script>
       window.addEventListener('message', async event => {
         if (event.data?.type !== 'photoai:import') return;
+        window.importCount = (window.importCount || 0) + 1;
         const {file, advice, requestId} = event.data;
         const bytes = await file.arrayBuffer();
         const sha256 = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))).map(b => b.toString(16).padStart(2,'0')).join('');
         window.received = {name:file.name, size:file.size, type:file.type, sha256, advice};
         parent.postMessage({type:'photoai:imported',version:1,requestId},event.origin);
       });
-      setInterval(() => parent.postMessage({type:'photoai:ready',version:1},'*'), 200);
+      window.allowReady = ${editorReady};
+      setInterval(() => { if (window.allowReady) parent.postMessage({type:'photoai:ready',version:1},'*'); }, 200);
       </script>` }))
     const target = `${base}/retouch?media_id=${mediaId}&job_id=${jobId}`
     async function importPhoto(localFile) {
-      await page.goto(target)
+      await page.goto(localFile ? `${base}/retouch` : target)
       const frame = page.frameLocator('iframe[title="AI 修图编辑器"]')
       if (localFile) await page.getByLabel('选择修图照片').setInputFiles({ name: 'override.png', mimeType: 'image/png', buffer: override })
-      await page.getByRole('button', { name: localFile ? '发送所选照片' : '发送素材库照片', exact: true }).click()
       await page.getByText('照片已导入，下方可开始编辑。完成后可在编辑器导出图片。', { exact: true }).waitFor()
+      // Repeated ready notifications must never create another editing session.
+      await frame.locator('html').evaluate(async () => {
+        for (let i = 0; i < 3; i++) parent.postMessage({type:'photoai:ready',version:1}, '*');
+        await new Promise(resolve => setTimeout(resolve, 300));
+        if (window.importCount !== 1) throw new Error('Duplicate automatic import');
+      })
       return frame.locator('html').evaluate(() => window.received)
     }
     const first = await importPhoto(false)
@@ -64,10 +74,39 @@ async function main() {
     assert.equal(second.sha256, crypto.createHash('sha256').update(override).digest('hex'))
     assert.equal(second.advice, undefined, 'Local override must not inherit another photo advice')
     assert.equal(apiRequests.length, 2, 'Local override must not fetch original media or Post advice')
+    // Selecting another file after import remounts the import screen automatically.
+    await page.getByLabel('选择修图照片').setInputFiles({ name: 'another.png', mimeType: 'image/png', buffer: original })
+    await page.getByText('照片已导入，下方可开始编辑。完成后可在编辑器导出图片。', { exact: true }).waitFor()
+    assert.equal(await page.frameLocator('iframe').locator('html').evaluate(() => window.received.sha256), crypto.createHash('sha256').update(original).digest('hex'))
+    assert.equal(apiRequests.length, 2)
+    // No source/advice fetch before authentication signals readiness.
+    editorReady = false
+    await page.goto(target)
+    const waitingFrame = page.frameLocator('iframe')
+    await waitingFrame.locator('html').waitFor()
+    assert.equal(apiRequests.length, 2)
+    await waitingFrame.locator('html').evaluate(() => { window.allowReady = true })
+    await page.getByText('照片已导入，下方可开始编辑。完成后可在编辑器导出图片。', { exact: true }).waitFor()
+    assert.equal(apiRequests.length, 4)
+    editorReady = true
+    sourceFails = true
+    await page.goto(target)
+    await page.getByRole('status').filter({ hasText: '读取素材失败（503）' }).waitFor()
+    await page.frameLocator('iframe').locator('html').evaluate(async () => {
+      for (let i = 0; i < 3; i++) parent.postMessage({type:'photoai:ready',version:1}, '*');
+      await new Promise(resolve => setTimeout(resolve, 300));
+      if (window.importCount) throw new Error('Failed source must not be imported');
+    })
+    assert.equal(apiRequests.length, 6, 'Failure must not automatically retry')
+    sourceFails = false
+    await page.getByRole('button', { name: '重新连接', exact: true }).click()
+    await page.getByText('照片已导入，下方可开始编辑。完成后可在编辑器导出图片。', { exact: true }).waitFor()
+    assert.equal(apiRequests.length, 8)
     assert.deepEqual(errors, [])
     const report = { status: 'passed', scope: 'Real-mode frontend; controlled API and iframe fixtures, no real backend/model execution',
       query_ids_reach_api: true, original_file_hash_matches: true, post_advice_payload_matches: true,
-      local_override_has_no_foreign_advice: true, browser_errors: 0 }
+      local_override_has_no_foreign_advice: true, automatic_import_once: true,
+      waits_for_editor_auth: true, upload_replaces_session: true, failed_source_requires_explicit_retry: true, browser_errors: 0 }
     const out = path.join(root, '.test_artifacts/dashboard-handoff')
     await fs.mkdir(out, { recursive: true })
     await fs.writeFile(path.join(out, 'report.json'), JSON.stringify(report, null, 2))

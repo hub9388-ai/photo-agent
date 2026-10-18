@@ -1,8 +1,8 @@
 {
   "verified_date": "2026-10-18",
   "timezone": "Asia/Shanghai",
-  "generated_at": "2026-10-18T22:57:57+08:00",
-  "code_revision": "1af2457d4f4fa8ca2067459877ab56a15a9dda6d",
+  "generated_at": "2026-10-18T23:37:14+08:00",
+  "code_revision": "d61f92803a5996a7de0522873714df2c8a7de0f8",
   "scope": "Repository-owned automated tests; parameterized items count separately; subtests and scripts excluded from case total.",
   "total": 202,
   "status_counts": {
@@ -14,7 +14,7 @@
     "main-results.xml": "2026-10-18T22:43:55+08:00",
     "retouch-results.json": "2026-10-18T22:44:30+08:00",
     "evaluator-results.json": "2026-10-18T22:44:31+08:00",
-    "browser-results.json": "2026-10-18T22:56:36+08:00"
+    "browser-results.json": "2026-10-18T23:36:01+08:00"
   },
   "modules": [
     {
@@ -82,7 +82,7 @@
     "main-results.xml": "6d4674fc8c198f2fd6a927fc140e8ae2e655fee83bc07f682b55b3a2b361e0d9",
     "retouch-results.json": "ae3573d49e65fc9f3d4e68c922a6be762efd06ad062b6367a667abcf1054d96b",
     "evaluator-results.json": "be0df06fb68a72eef5dbc522b158c10ba44dcbe06df9543982852aca03a1ccd3",
-    "browser-results.json": "8f6742b42cfcdcce5d9db132982fecb5e5ed0acd6a106179cabb107f30c4fe48"
+    "browser-results.json": "a6629cffbd0d0d05826c8c55e8f54b5692c3eb355a70871e96cb3fb4d90e7cdd"
   },
   "test_source_sha256": {
     "backend/tests/test_agent_request_contract.py": "bef5406f771e64485741b88560bb0418b35df63d1abc9cf48f6287fcb0a78a95",
@@ -102,7 +102,7 @@
     "backend/tests/test_skills_mcp_stage85.py": "d6dde95f38b90d2a3969ecee8f65cdb285f6baf11d6e461849fd0080aa73e7e9",
     "backend/tests/test_stage6_errors.py": "c8a1463eb533ef2eca24f868d41a0dcf30570230c0a4d6d0793fd8ea4db42182",
     "evaluations/001-shadow-direction/test_evaluate.py": "19cb6359a2e15510257cd4e2e5c6355dff7e1527528327f92920ed176e486619",
-    "frontend/tests/product-demo.spec.ts": "c3ccc324c46760e46bba4e824c9b71919cf6ff0d0eb55f513fd07ef88a2bc35c",
+    "frontend/tests/product-demo.spec.ts": "c7738932852fd5b2931c74fd35fd506230d789d2fd301eac12129a8a2db50f9c",
     "tests/test_asset_recovery.py": "62cb3f54282b604857c6648cc294d0a2a5b795cd08678554a2c8d8b71f82f5c0",
     "tests/test_cli.py": "45d401199005e488bd4cacc4e14cce605b1d983398c2525b2618e2a076440c0e",
     "tests/test_coach_lifecycle.py": "0a8d2708568b7f60ba9bb970216b0fd085a07fa851867619b0fb6629cb4651f6",

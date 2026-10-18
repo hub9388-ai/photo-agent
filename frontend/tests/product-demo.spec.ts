@@ -14,7 +14,6 @@ test.beforeEach(async ({ page }) => {
 test.afterEach(async ({ page }) => { expect(failures.get(page), "No backend requests or browser errors").toEqual([]) })
 async function editor(page: Page) {
   await page.goto("/retouch/")
-  await page.getByRole("button", { name: "发送素材库照片", exact: true }).click()
   const frame = page.frameLocator('iframe[title="AI 修图编辑器"]')
   await expect(frame.getByRole("button", { name: "调色", exact: true })).toBeVisible()
   return frame
@@ -183,7 +182,6 @@ test("dashboard analysis handoff preserves photo, job and Post advice in editor 
   expect(target.searchParams.get("media_id")).toBe("demo-cat-original")
   expect(target.searchParams.get("job_id")).toBe("demo-cat")
   await handoff.click()
-  await page.getByRole("button", { name: "发送素材库照片", exact: true }).click()
   const frame = page.frameLocator('iframe[title="AI 修图编辑器"]')
   await expect(frame.getByRole("slider", { name: /^对比度/ })).toHaveValue("0.08")
   await expect(frame.getByRole("slider", { name: /^高光/ })).toHaveValue("-0.15")
