@@ -45,6 +45,7 @@ unpacked_doc/
 .claude/
 .kiro/
 .npm-cache/
+.netlify/
 node_modules/
 .next/
 

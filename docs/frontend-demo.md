@@ -1,5 +1,7 @@
 # 纯前端求职演示
 
+在线体验：[PhotoAI 演示工作台](https://photo-agent-hub9388.netlify.app/)。
+
 此版本用于浏览器体验摄影产品流程，不部署后端、不配置模型 Key。
 网页始终标明演示模式。工作台、分析、素材库、学习、规划和历史直接复用原页面组件；修图加载原编辑器的静态构建，保留聊天、画布、工具栏、调色和导出页。演示只替换数据与执行来源。
 
@@ -36,6 +38,8 @@ npm.cmd run preview:demo
 主站演示缓存使用 `photoai.demo.*` 命名空间，修图建议仅写入演示会话专用键。编辑生成的 PNG 存入演示专用 IndexedDB，保存到素材库时另存一份已应用快照。重置只清理演示记录，不清理真实模式缓存。
 
 ## Netlify
+
+当前站点通过 CLI 将本地验证后的 `frontend/out-demo` 发布到 Netlify，访客无需登录。尚未连接 GitHub 自动部署；推送源码不会自动更新网站。后续修改需重新执行 `npm run build:demo`，再使用 `netlify deploy --prod --no-build --dir <out-demo 的绝对路径>` 发布，或按下方配置连接 GitHub。
 
 仓库根目录已有 `netlify.toml`：
 
