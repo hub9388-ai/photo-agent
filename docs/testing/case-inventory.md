@@ -2,15 +2,15 @@
 
 验证日期：2026-10-18（Asia/Shanghai）。
 
-共 **202 条自动化用例**，覆盖 **10 个模块、39 个测试文件**。
-结果：{'passed': 202}；另有 11 个子场景，不重复计入总数。
+共 **211 条自动化用例**，覆盖 **10 个模块、39 个测试文件**。
+结果：{'passed': 211}；另有 11 个子场景，不重复计入总数。
 
 统计来源为运行报告，不是函数名或 assert 数量。[阅读测试方法与结论](README.md)；[机器可读快照](results.json)。
 
 | 模块 | 用例数 | 通过 |
 | --- | ---: | ---: |
 | Agent 协作与上下文 | 33 | 33 |
-| 模型与外部服务接入 | 21 | 21 |
+| 模型与外部服务接入 | 30 | 30 |
 | 输出协议与界面文案 | 26 | 26 |
 | 后端 API、任务与媒体 | 20 | 20 |
 | 素材、规划与数据存储 | 21 | 21 |
@@ -177,15 +177,24 @@ Post / Coach API 请求到 Agent 服务的映射。
 
 ### [test_provider_adapter.py](../../tests/test_provider_adapter.py)
 
-参考链接检索与高德 POI 响应适配。
+高德 POI、网页搜索兜底、数据边界及规划资料传递。
 
-本次 2 条；passed 2。
+本次 11 条；passed 11。
 
 <details>
 <summary>展开全部用例名称与结果</summary>
 
+- `tests.test_provider_adapter.ProviderAdapterTests::test_both_search_endpoints_failing_returns_empty` — passed
+- `tests.test_provider_adapter.ProviderAdapterTests::test_ddg_challenge_uses_bing_rss_and_filters_invalid_links` — passed
+- `tests.test_provider_adapter.ProviderAdapterTests::test_empty_web_keeps_failure_honest_and_queries_bounded` — passed
+- `tests.test_provider_adapter.ProviderAdapterTests::test_healthy_amap_does_not_call_web` — passed
+- `tests.test_provider_adapter.ProviderAdapterTests::test_missing_places_searches_without_faking_poi` — passed
+- `tests.test_provider_adapter.ProviderAdapterTests::test_missing_weather_searches_without_faking_forecast` — passed
+- `tests.test_provider_adapter.ProviderAdapterTests::test_no_location_does_not_search_unrelated_results` — passed
+- `tests.test_provider_adapter.ProviderAdapterTests::test_planning_prompt_receives_web_evidence_without_new_source_list` — passed
 - `tests.test_provider_adapter.ProviderAdapterTests::test_search_places_normalizes_amap_payload` — passed
 - `tests.test_provider_adapter.ProviderAdapterTests::test_search_reference_links_parses_html_results` — passed
+- `tests.test_provider_adapter.ProviderAdapterTests::test_skipped_capabilities_never_trigger_web` — passed
 
 </details>
 

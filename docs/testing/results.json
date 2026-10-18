@@ -1,17 +1,17 @@
 {
   "verified_date": "2026-10-18",
   "timezone": "Asia/Shanghai",
-  "generated_at": "2026-10-18T23:37:14+08:00",
-  "code_revision": "d61f92803a5996a7de0522873714df2c8a7de0f8",
+  "generated_at": "2026-10-18T23:58:04+08:00",
+  "code_revision": "bb2fb11c07171ff289e88af15dc40c32c49130bf",
   "scope": "Repository-owned automated tests; parameterized items count separately; subtests and scripts excluded from case total.",
-  "total": 202,
+  "total": 211,
   "status_counts": {
-    "passed": 202
+    "passed": 211
   },
   "main_subtests_excluded": 11,
   "test_files": 39,
   "result_times": {
-    "main-results.xml": "2026-10-18T22:43:55+08:00",
+    "main-results.xml": "2026-10-18T23:56:33+08:00",
     "retouch-results.json": "2026-10-18T22:44:30+08:00",
     "evaluator-results.json": "2026-10-18T22:44:31+08:00",
     "browser-results.json": "2026-10-18T23:36:01+08:00"
@@ -26,8 +26,8 @@
     {
       "id": "provider",
       "name": "模型与外部服务接入",
-      "cases": 21,
-      "passed": 21
+      "cases": 30,
+      "passed": 30
     },
     {
       "id": "contract",
@@ -79,7 +79,7 @@
     }
   ],
   "evidence_sha256": {
-    "main-results.xml": "6d4674fc8c198f2fd6a927fc140e8ae2e655fee83bc07f682b55b3a2b361e0d9",
+    "main-results.xml": "f688e99a1216db0955604c09e401d34b01c4e55eb4e467efca56e2c29a5fe878",
     "retouch-results.json": "ae3573d49e65fc9f3d4e68c922a6be762efd06ad062b6367a667abcf1054d96b",
     "evaluator-results.json": "be0df06fb68a72eef5dbc522b158c10ba44dcbe06df9543982852aca03a1ccd3",
     "browser-results.json": "a6629cffbd0d0d05826c8c55e8f54b5692c3eb355a70871e96cb3fb4d90e7cdd"
@@ -114,7 +114,7 @@
     "tests/test_plan_followup.py": "ef05118d2065d75af4915b167e4e54780b0d2bcf2c34f16aad4763719cd4d4d5",
     "tests/test_post_chat.py": "23e9154546495599274b4f69ea6fe47cf7f2a600ca439a1c51256e3ea3b58e3b",
     "tests/test_protocol.py": "baab6a2580a1349384c7674dfccb9baa51bffd7865bbe9189e9b1bb3cff1192d",
-    "tests/test_provider_adapter.py": "087bbe52b67ab97605cb2e6ccdac2f65519a8251f618ed6fee85d2aef8f6c272",
+    "tests/test_provider_adapter.py": "b6d523e2c940ebf58ca415fc12b9df5520640034b2a5f74ca75153387c3d182e",
     "tests/test_qwen_image_config.py": "4cecaa60b4e611c0e1b788855acb27962dae88eaad02972b3d432e8e4f85d14c",
     "tests/test_retouch_adjust_draft.py": "ce58ef61885286c48252e6c532375ec052bde6fef4a91a2f8e9003b4a49d5338",
     "tests/test_retouch_brush.py": "eca83d123c0a94196378ec05bbd486129a3db2fc03714be1c01f2709fbba50b0",
@@ -553,6 +553,62 @@
     },
     {
       "file": "tests/test_provider_adapter.py",
+      "id": "tests.test_provider_adapter.ProviderAdapterTests::test_both_search_endpoints_failing_returns_empty",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_provider_adapter.py",
+      "id": "tests.test_provider_adapter.ProviderAdapterTests::test_ddg_challenge_uses_bing_rss_and_filters_invalid_links",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_provider_adapter.py",
+      "id": "tests.test_provider_adapter.ProviderAdapterTests::test_empty_web_keeps_failure_honest_and_queries_bounded",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_provider_adapter.py",
+      "id": "tests.test_provider_adapter.ProviderAdapterTests::test_healthy_amap_does_not_call_web",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_provider_adapter.py",
+      "id": "tests.test_provider_adapter.ProviderAdapterTests::test_missing_places_searches_without_faking_poi",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_provider_adapter.py",
+      "id": "tests.test_provider_adapter.ProviderAdapterTests::test_missing_weather_searches_without_faking_forecast",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_provider_adapter.py",
+      "id": "tests.test_provider_adapter.ProviderAdapterTests::test_no_location_does_not_search_unrelated_results",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_provider_adapter.py",
+      "id": "tests.test_provider_adapter.ProviderAdapterTests::test_planning_prompt_receives_web_evidence_without_new_source_list",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_provider_adapter.py",
       "id": "tests.test_provider_adapter.ProviderAdapterTests::test_search_places_normalizes_amap_payload",
       "status": "passed",
       "suite": "main",
@@ -561,6 +617,13 @@
     {
       "file": "tests/test_provider_adapter.py",
       "id": "tests.test_provider_adapter.ProviderAdapterTests::test_search_reference_links_parses_html_results",
+      "status": "passed",
+      "suite": "main",
+      "module": "provider"
+    },
+    {
+      "file": "tests/test_provider_adapter.py",
+      "id": "tests.test_provider_adapter.ProviderAdapterTests::test_skipped_capabilities_never_trigger_web",
       "status": "passed",
       "suite": "main",
       "module": "provider"

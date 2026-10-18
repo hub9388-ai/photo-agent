@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import xml.etree.ElementTree as ET
 from datetime import date, datetime
 from html import unescape
 from urllib.error import HTTPError, URLError
@@ -18,7 +19,7 @@ except ImportError:
     _requests_lib = None  # type: ignore
 
 
-REFERENCE_SEARCH_PROVIDER = "DuckDuckGo HTML Search"
+REFERENCE_SEARCH_PROVIDER = "Web Search (DuckDuckGo / Bing RSS)"
 PLACES_PROVIDER = "高德地图 POI"
 WEATHER_PROVIDER = "高德天气"
 WEATHER_FORECAST_MAX_DAYS = 3
@@ -89,7 +90,7 @@ def search_reference_links(query: str, limit: int = 3) -> list[dict]:
         limit=limit,
     )
 
-    url = f"https://duckduckgo.com/html/?q={quote_plus(text)}"
+    url = f"https://html.duckduckgo.com/html/?q={quote_plus(text)}"
     request = Request(
         url,
         headers={
@@ -102,7 +103,7 @@ def search_reference_links(query: str, limit: int = 3) -> list[dict]:
 
     try:
         with urlopen(request, timeout=8) as response:
-            html_text = response.read().decode("utf-8", errors="ignore")
+            html_text = response.read(1_000_000).decode("utf-8", errors="ignore")
     except (HTTPError, URLError, TimeoutError, OSError) as exc:
         trace_event(
             "provider.reference_search.failed",
@@ -110,25 +111,32 @@ def search_reference_links(query: str, limit: int = 3) -> list[dict]:
             query=text,
             error=str(exc),
         )
-        return []
+        return search_bing_reference_links(text, limit=limit)
 
-    matches = re.findall(
-        r'<a[^>]+class="result__a"[^>]+href="([^"]+)"[^>]*>(.*?)</a>',
+    matches = list(re.finditer(
+        r'<a\b(?=[^>]*\bclass="[^"]*\bresult__a\b[^"]*")[^>]*\bhref="([^"]+)"[^>]*>(.*?)</a>',
         html_text,
         flags=re.IGNORECASE | re.DOTALL,
-    )
+    ))
 
     results: list[dict] = []
     seen: set[str] = set()
-    for raw_url, raw_title in matches:
+    for index, match in enumerate(matches):
+        raw_url, raw_title = match.groups()
         clean_url = decode_search_redirect(unescape(raw_url))
         clean_title = re.sub(r"<.*?>", "", unescape(raw_title)).strip()
-        if not clean_url or not clean_title or clean_url in seen:
+        if urlparse(clean_url).scheme not in {"http", "https"} or not clean_title or clean_url in seen:
             continue
         seen.add(clean_url)
-        results.append({"title": clean_title, "url": clean_url})
+        following = html_text[match.end():matches[index + 1].start() if index + 1 < len(matches) else len(html_text)]
+        snippet = re.search(r'<(?:a|div)[^>]*class="[^"]*result__snippet[^"]*"[^>]*>(.*?)</(?:a|div)>', following, re.I | re.S)
+        excerpt = compact_text(unescape(re.sub(r"<[^>]+>", " ", snippet.group(1))), 500) if snippet else ""
+        results.append({"title": compact_text(clean_title), "url": clean_url, "snippet": excerpt})
         if len(results) >= limit:
             break
+
+    if not results:
+        results = search_bing_reference_links(text, limit=limit)
 
     trace_event(
         "provider.reference_search.result",
@@ -136,6 +144,33 @@ def search_reference_links(query: str, limit: int = 3) -> list[dict]:
         query=text,
         result_count=len(results),
     )
+    return results
+
+
+def search_bing_reference_links(query: str, limit: int = 3) -> list[dict]:
+    """Public RSS endpoint; fixed host, bounded response, no result-page fetching."""
+    request = Request(
+        f"https://www.bing.com/search?format=rss&q={quote_plus(query)}",
+        headers={"User-Agent": "Mozilla/5.0"},
+    )
+    try:
+        with urlopen(request, timeout=8) as response:
+            root = ET.fromstring(response.read(1_000_000))
+    except (HTTPError, URLError, TimeoutError, OSError, ET.ParseError, ValueError):
+        trace_event("provider.reference_search.fallback_failed", provider="Bing RSS")
+        return []
+    results = []
+    seen = set()
+    for item in root.findall("./channel/item"):
+        url = (item.findtext("link") or "").strip()
+        title = compact_text(item.findtext("title") or "")
+        if urlparse(url).scheme not in {"http", "https"} or not title or url in seen:
+            continue
+        seen.add(url)
+        results.append({"title": title, "url": url, "snippet": compact_text(
+            re.sub(r"<[^>]+>", " ", unescape(item.findtext("description") or "")), 500)})
+        if len(results) >= limit:
+            break
     return results
 
 
@@ -560,6 +595,26 @@ def collect_provider_context(brief: dict, *, place_limit: int = DEFAULT_PLACE_LI
         "days": [],
     }
 
+    # Keep web evidence separate from verified map POIs and weather forecasts.
+    # Only explicitly permitted brief fields leave this process, never media/keys.
+    web_queries = []
+    location = " ".join(str(brief.get(key) or "").strip()[:80] for key in ("city", "target_location")).strip()
+    if location and brief.get("needs_places", True) and not places.get("results"):
+        web_queries.append(("places", f"{location} {str(brief.get('subject') or '摄影')[:80]} 游览路线 拍摄地点 交通"))
+    if location and brief.get("needs_weather", True) and not weather.get("days"):
+        web_queries.append(("weather", f"{location} {str(brief.get('shoot_date') or '')[:20]} 天气预报"))
+    web_results = []
+    for purpose, query in web_queries:
+        for result in search_reference_links(query[:240], limit=3):
+            web_results.append({**result, "purpose": purpose})
+    web_search = {
+        "status": "ok" if web_results else "empty" if web_queries else "skipped",
+        "results": web_results,
+        "queries": [query for _, query in web_queries],
+    }
+    trace_event("provider.planning_web_fallback.result", status=web_search["status"],
+                purposes=[purpose for purpose, _ in web_queries], result_count=len(web_results))
+
     availability_notes = [
         compact_text(places.get("note", "")),
         compact_text(weather.get("note", "")),
@@ -570,6 +625,7 @@ def collect_provider_context(brief: dict, *, place_limit: int = DEFAULT_PLACE_LI
         "brief": brief,
         "places": places,
         "weather": weather,
+        "web_search": web_search,
         "availability_notes": availability_notes,
     }
     trace_event(

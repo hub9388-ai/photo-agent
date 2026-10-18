@@ -35,7 +35,7 @@ MODULES = [
     }),
     ('provider', '模型与外部服务接入', {
         'tests/test_runtime.py': '配置读取、凭据缺失和模型客户端初始化',
-        'tests/test_provider_adapter.py': '参考链接检索与高德 POI 响应适配',
+        'tests/test_provider_adapter.py': '高德 POI、网页搜索兜底、数据边界及规划资料传递',
         'tests/test_qwen_image_config.py': 'Key / URL 选择、歧义配置及不可信目标拦截',
         'backend/tests/test_settings.py': '后端配置读取',
         'backend/tests/test_legacy_imports.py': '既有 Agent 模块导入兼容',
