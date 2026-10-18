@@ -55,12 +55,19 @@ flowchart LR
 
 ## 关键文档
 
-- [纯前端演示：案例、体验与 Netlify 部署](docs/frontend-demo.md)
-- [完整演示部署包与资源清单](deploy/full-demo/README.md)
+- **[在线体验](https://photo-agent-hub9388.netlify.app/)**：通过预置猫图体验分析、修图、素材保存与学习反馈，也可操作西湖摄影规划。
+- **[建议如何落地到修图](docs/post-to-sliders.md)**：Post 建议如何转换为受支持的滑杆初值，让用户预览、微调并应用；不支持的参数明确跳过。
+- **[评测与改进案例](evaluations/001-shadow-direction/README.md)**：围绕阴影方向和不支持参数被替代的问题，查看执行记录、评测用例及验证方法。
+
+<details>
+<summary>开发与部署文档</summary>
+
+- [演示案例、交互范围与 Netlify 部署](docs/frontend-demo.md)
+- [完整系统部署包与资源清单](deploy/full-demo/README.md)
 - [修图服务集成说明](docs/retouch-integration.md)
-- [Post 建议 → 调色滑杆](docs/post-to-sliders.md)
 - [人物笔刷与选区保护](docs/portrait-brush-improvements.md)
-- [第一条可重复评测：阴影方向与不支持参数替代](evaluations/001-shadow-direction/README.md)
+
+</details>
 
 ## 当前验证边界
 
