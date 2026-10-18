@@ -39,6 +39,7 @@ class JobDetailResponse(ApiSchema):
     media_ids: list[str] = Field(default_factory=list, alias="mediaIds")
     progress: float | None = None
     context: dict[str, Any] = Field(default_factory=dict)
+    user_goal: str = Field(default="", alias="userGoal")
     created_at: datetime = Field(alias="createdAt")
     updated_at: datetime = Field(alias="updatedAt")
 
@@ -137,6 +138,7 @@ def job_detail_response_from_job(
         media_ids=job.media_ids,
         progress=progress,
         context=job.context,
+        user_goal=job.user_goal,
         created_at=job.created_at,
         updated_at=job.updated_at,
     )

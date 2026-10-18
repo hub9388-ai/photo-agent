@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/yuyuanweb/ai-retouch-agent.git",
+  "resolved_repository": "https://github.com/yuyuanweb/ai-picture-editor",
+  "commit": "49f6ad8c96740a68b7e6228a47e8e2be6876eb34",
+  "checkout": "integrations/ai-retouch-agent",
+  "patch": "integrations/retouch-photoai.patch",
+  "license_status": "No LICENSE file found at the pinned commit; do not redistribute upstream code without resolving permission."
+}

@@ -1,0 +1,2 @@
+# Keep replayable patch bytes unchanged; context-only blank lines are intentional.
+*.patch -text -whitespace

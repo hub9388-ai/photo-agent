@@ -1,0 +1,173 @@
+name: photoai-demo
+
+x-retouch-environment: &retouch-environment
+  APP_ENV: production
+  DATABASE_URL: postgresql+asyncpg://retouch:${POSTGRES_PASSWORD:?Set deployment .env}/retouch
+  REDIS_URL: redis://redis:6379/0
+  S3_ENDPOINT: http://minio:9000
+  S3_PUBLIC_ENDPOINT: https://${OBJECTS_HOST:?Set deployment .env}
+  S3_ACCESS_KEY: ${MINIO_USER:?Set deployment .env}
+  S3_SECRET_KEY: ${MINIO_PASSWORD:?Set deployment .env}
+  S3_BUCKET: retouch
+  JWT_SECRET: ${RETOUCH_JWT_SECRET:?Set deployment .env}
+  IMAGE_PROVIDER: dashscope
+  DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:?Set deployment .env}
+  DASHSCOPE_BASE_URL: ${DASHSCOPE_BASE_URL:-https://dashscope.aliyuncs.com}
+  IMAGE_EDIT_MODEL: ${IMAGE_EDIT_MODEL:-qwen-image-2.1-pro}
+  TEXT_TO_IMAGE_MODEL: ${TEXT_TO_IMAGE_MODEL:-qwen-image-3.0-pro}
+  PLANNER_MODEL: ${PLANNER_MODEL:-qwen-plus}
+  # Matches the current verified mode: simplified splitting remains blocked.
+  MATTING_PROVIDER: corner
+  OCR_PROVIDER: none
+  DEMO_BUDGET_DB: /limits/budget.sqlite3
+  DEMO_DAILY_POST_LIMIT: ${DEMO_DAILY_POST_LIMIT:-60}
+
+services:
+  edge:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      SITE_HOST: ${SITE_HOST:?Set deployment .env}
+      OBJECTS_HOST: ${OBJECTS_HOST:?Set deployment .env}
+      ACME_EMAIL: ${ACME_EMAIL:?Set deployment .env}
+      DEMO_USER: ${DEMO_USER:?Set deployment .env}
+      DEMO_PASSWORD_HASH: ${DEMO_PASSWORD_HASH:?Set deployment .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [main-web, main-api, retouch-web, retouch-api]
+
+  main-web:
+    image: photoai-demo-main-web:local
+    build:
+      context: ../..
+      dockerfile: deploy/full-demo/main-web.Dockerfile
+      args:
+        SITE_HOST: ${SITE_HOST:?Set deployment .env}
+    restart: unless-stopped
+
+  main-api:
+    image: photoai-demo-main-api:local
+    build:
+      context: ../..
+      dockerfile: deploy/full-demo/main-api.Dockerfile
+    restart: unless-stopped
+    environment:
+      PHOTO_ENV: production
+      PHOTO_DEBUG: "0"
+      PHOTO_MEDIA_ROOT: /state/media
+      PHOTO_DATABASE_PATH: /state/app.sqlite3
+      PHOTO_AGENT_DATA_DIR: /state/agent
+      PHOTO_CORS_ORIGINS: https://${SITE_HOST:?Set deployment .env}
+      PHOTO_CORS_ALLOW_ALL: "0"
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:?Set deployment .env}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-flash}
+      DEEPSEEK_BASE_URL: https://api.deepseek.com/anthropic
+      AMAP_KEY: ${AMAP_KEY:-}
+      DEMO_BUDGET_DB: /limits/budget.sqlite3
+      DEMO_DAILY_POST_LIMIT: ${DEMO_DAILY_POST_LIMIT:-60}
+    volumes: ["main_state:/state", "demo_limits:/limits"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health',timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  retouch-web:
+    image: photoai-demo-retouch-web:local
+    build:
+      context: ../..
+      dockerfile: deploy/full-demo/retouch.Dockerfile
+      target: web
+      args:
+        SITE_HOST: ${SITE_HOST:?Set deployment .env}
+    restart: unless-stopped
+
+  migrate:
+    image: photoai-demo-retouch-api:local
+    build:
+      context: ../..
+      dockerfile: deploy/full-demo/retouch.Dockerfile
+      target: backend
+    environment: *retouch-environment
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      postgres: {condition: service_healthy}
+    restart: "no"
+
+  retouch-api:
+    image: photoai-demo-retouch-api:local
+    environment: *retouch-environment
+    restart: unless-stopped
+    volumes: ["demo_limits:/limits"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+      minio: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request; r=json.load(urllib.request.urlopen('http://127.0.0.1:7302/api/health',timeout=8)); assert r['database']==r['storage']=='ok'"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+
+  retouch-worker:
+    image: photoai-demo-retouch-api:local
+    environment: *retouch-environment
+    command: ["arq", "retouch_worker.WorkerSettings"]
+    restart: unless-stopped
+    depends_on:
+      retouch-api: {condition: service_healthy}
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: retouch
+      POSTGRES_DB: retouch
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set deployment .env}
+    restart: unless-stopped
+    volumes: ["postgres_data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U retouch -d retouch"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: unless-stopped
+    volumes: ["redis_data:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  minio:
+    image: photoai-demo-minio:local
+    build:
+      context: ../..
+      dockerfile: integrations/minio-smoke.Dockerfile
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USER:?Set deployment .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:?Set deployment .env}
+      MINIO_API_CORS_ALLOW_ORIGIN: https://${SITE_HOST:?Set deployment .env}
+    restart: unless-stopped
+    volumes: ["object_data:/data"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:9000/minio/health/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  main_state:
+  postgres_data:
+  redis_data:
+  object_data:
+  demo_limits:
+  caddy_data:
+  caddy_config:

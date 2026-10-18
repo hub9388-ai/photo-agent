@@ -4,6 +4,8 @@ import os
 import sys
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
+from urllib.parse import urlsplit
 
 import anthropic
 
@@ -28,6 +30,7 @@ def load_local_env_files() -> None:
 
     candidate_dirs = [
         Path.cwd(),
+        Path(__file__).resolve().parent.parent,
         Path(__file__).resolve().parent,
     ]
     seen_paths: set[str] = set()
@@ -89,6 +92,27 @@ def resolve_env_value(name: str) -> str:
 
 
 def resolve_anthropic_client_settings() -> dict[str, str]:
+    deepseek_key = resolve_env_value("DEEPSEEK_API_KEY")
+    provider = resolve_env_value("PHOTO_MODEL_PROVIDER").lower() or (
+        "deepseek" if deepseek_key else "anthropic"
+    )
+    if provider not in {"deepseek", "anthropic"}:
+        raise ValueError("PHOTO_MODEL_PROVIDER must be deepseek or anthropic.")
+    if provider == "deepseek":
+        # Never inherit a Claude/DashScope endpoint or auth token for this key.
+        base_url = (resolve_env_value("DEEPSEEK_BASE_URL") or "https://api.deepseek.com/anthropic").rstrip("/")
+        parsed = urlsplit(base_url)
+        if (parsed.scheme, parsed.netloc, parsed.path) != ("https", "api.deepseek.com", "/anthropic") or parsed.query or parsed.fragment:
+            raise ValueError("DEEPSEEK_BASE_URL must be the official HTTPS Anthropic-compatible endpoint.")
+        return {
+            "provider": "deepseek",
+            "model": resolve_env_value("DEEPSEEK_MODEL") or "deepseek-flash",
+            "api_key": deepseek_key,
+            "auth_token": "",
+            "base_url": base_url,
+            "active_auth_mode": "api_key" if deepseek_key else "",
+        }
+
     api_key = resolve_env_value("ANTHROPIC_API_KEY")
     auth_token = resolve_env_value("ANTHROPIC_AUTH_TOKEN")
     base_url = resolve_env_value("ANTHROPIC_BASE_URL")
@@ -100,11 +124,17 @@ def resolve_anthropic_client_settings() -> dict[str, str]:
         active_auth_mode = "api_key"
 
     return {
+        "provider": "anthropic",
+        "model": resolve_env_value("ANTHROPIC_MODEL") or "claude-sonnet-4-6",
         "api_key": api_key,
         "auth_token": auth_token,
         "base_url": base_url,
         "active_auth_mode": active_auth_mode,
     }
+
+
+def resolve_model_name() -> str:
+    return resolve_anthropic_client_settings()["model"]
 
 
 def ensure_anthropic_credentials(*, source_cli: str) -> dict[str, str]:
@@ -113,8 +143,8 @@ def ensure_anthropic_credentials(*, source_cli: str) -> dict[str, str]:
         return settings
 
     print(
-        "\nStartup failed: missing Anthropic credential.\n"
-        "Please configure ANTHROPIC_API_KEY or ANTHROPIC_AUTH_TOKEN"
+        "\nStartup failed: missing model credential.\n"
+        "Please configure DEEPSEEK_API_KEY (DeepSeek), or ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN (Anthropic)"
         f" before launching {source_cli} again.\n"
     )
     sys.exit(1)
@@ -122,12 +152,18 @@ def ensure_anthropic_credentials(*, source_cli: str) -> dict[str, str]:
 
 def create_anthropic_client(*, source_cli: str) -> anthropic.Anthropic:
     settings = ensure_anthropic_credentials(source_cli=source_cli)
-    client_kwargs: dict[str, str] = {}
+    client_kwargs: dict[str, Any] = {}
 
     if settings["active_auth_mode"] == "auth_token":
         client_kwargs["auth_token"] = settings["auth_token"]
     elif settings["api_key"]:
         client_kwargs["api_key"] = settings["api_key"]
+
+    if settings["provider"] == "deepseek":
+        # The SDK otherwise reads ANTHROPIC_AUTH_TOKEN from the process environment.
+        client_kwargs["auth_token"] = ""
+        # An empty token would generate the invalid header "Bearer ". Explicitly omit it.
+        client_kwargs["default_headers"] = {"Authorization": anthropic.omit}
 
     if settings["base_url"]:
         client_kwargs["base_url"] = settings["base_url"]
@@ -169,7 +205,7 @@ def handle_api_error(exc: Exception) -> bool:
         if trace_event is not None:
             trace_event("api.error", error_type="AuthenticationError", message=str(exc))
         print(
-            "\nAuthentication failed: please check ANTHROPIC_API_KEY / "
+            "\nAuthentication failed: check DEEPSEEK_API_KEY for DeepSeek, or ANTHROPIC_API_KEY / "
             "ANTHROPIC_AUTH_TOKEN and ANTHROPIC_BASE_URL.\n"
         )
         sys.exit(1)

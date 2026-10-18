@@ -66,19 +66,15 @@ export function UploadPreviewPanel({
               className="object-cover"
             />
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-red-300 via-yellow-200 to-blue-300">
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
-                <polygon points="50,200 150,80 250,200" fill="#CBD5E1CC" />
-                <polygon points="100,220 200,60 320,220" fill="#F8FAFCCC" />
-                <rect x="40" y="200" width="320" height="20" fill="#0F172A55" />
-              </svg>
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-100 text-sm text-slate-500">
+              暂无照片预览
             </div>
           )}
         </div>
 
         {/* Thumbnails */}
         <div className="grid grid-cols-3 gap-2">
-          {(images.length ? images : [undefined, undefined, undefined]).slice(0, 3).map((image, index) => (
+          {images.slice(0, 3).map((image, index) => (
             <div
               key={image || index}
               onClick={() => onSelectImage?.(index)}
@@ -109,7 +105,7 @@ export function UploadPreviewPanel({
         <div className="rounded-lg bg-slate-50 p-3.5 space-y-2">
           <p className="text-sm font-bold text-slate-900">EXIF 信息 ⓘ</p>
           <p className="text-sm text-slate-500">
-            ISO {exif?.iso ?? "200"} / {exif?.aperture ?? "f8"} / {exif?.shutterSpeed ?? "1/125s"} / {exif?.focalLength ?? "35mm"}
+            ISO {exif?.iso ?? "未知"} / {exif?.aperture ?? "未知"} / {exif?.shutterSpeed ?? "未知"} / {exif?.focalLength ?? "未知"}
           </p>
         </div>
 

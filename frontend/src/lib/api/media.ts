@@ -10,7 +10,11 @@ import type {
   UploadMediaResponse,
   PaginatedResponse,
 } from "@/types/api"
-import { apiClient, buildApiUrl, isMockMode, mockResponse, delay, uploadForm } from "./client"
+import { apiClient, apiRequest, buildApiUrl, isMockMode, mockResponse, delay, uploadForm } from "./client"
+
+export async function getMedia(mediaId: string): Promise<UploadMediaResponse> {
+  return apiRequest<UploadMediaResponse>(`/api/media/${encodeURIComponent(mediaId)}`)
+}
 import {
   mockAssets,
   mockAssetStats,

@@ -1,0 +1,22 @@
+{
+  "trace_kind": "historical_observation",
+  "provenance": {
+    "source": "既有只读数据库审计，见 docs/retouch-adjust-audit-2026-10-18.md；本文件为选取字段转录，非完整数据库导出",
+    "media_id": "media_99e9da86d6f546a2bf8d72b694521163",
+    "analysis_job_id": "job_f64a4fe8e56a4c788e32b250ed8e9c99",
+    "session_id": "68822962-57e6-4db9-9a60-2d5cb2c78232",
+    "turn_id": "c5a54b67-6302-4844-8045-4a1df094e392",
+    "run_id": "da290809-42ad-48d6-8e74-16cb8b42fb94",
+    "started_at": "2026-10-18T09:43:15.643045+08:00",
+    "finished_at": "2026-10-18T09:43:30.164116+08:00"
+  },
+  "execution_status": "succeeded",
+  "tool_calls": [{
+    "tool": "adjust_image",
+    "params": {"brightness": -0.08, "contrast": 0.08, "highlights": -0.35, "shadows": 0.12, "saturation": -0.22, "vibrance": -0.1, "clarity": 0.15, "sharpness": 0.08, "temperature": 0.0, "tint": 0.0, "vignette": 0.0, "layer_id": null}
+  }],
+  "unsupported_handling": {
+    "Blacks2012": {"action": "substituted", "reason": "历史规划回复称由 brightness=-0.08 和 contrast=+0.08 协同实现厚重感。"},
+    "Dehaze": {"action": "substituted", "reason": "历史规划回复称用 clarity 与 sharpness 联合模拟，sharpness=+0.08。"}
+  }
+}

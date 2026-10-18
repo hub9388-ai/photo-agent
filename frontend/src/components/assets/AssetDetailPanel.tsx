@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { ChevronLeft, ChevronRight, ImageOff, Pin, Send, Star, X } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatExif, gradeLabel } from "@/lib/assets"
@@ -179,7 +180,13 @@ export function AssetDetailPanel({
           <p className="text-xs text-slate-500 leading-relaxed">
             当前素材可发送至 PostAgent 或 CoachAgent；上下文会携带分档、评分和筛选理由。
           </p>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            {asset.media_id && asset.upload_status !== "failed" && (
+              <Link href={`/retouch?media_id=${encodeURIComponent(asset.media_id)}`}
+                className="inline-flex h-8 items-center rounded border border-violet-200 bg-violet-50 px-3 text-xs font-bold text-violet-700">
+                进入修图
+              </Link>
+            )}
             <button
               type="button"
               onClick={onSendToPost}

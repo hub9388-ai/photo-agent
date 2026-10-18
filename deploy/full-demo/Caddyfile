@@ -1,0 +1,56 @@
+{
+    email {$ACME_EMAIL}
+}
+
+{$SITE_HOST} {
+    basic_auth {
+        {$DEMO_USER} {$DEMO_PASSWORD_HASH}
+    }
+    request_body {
+        max_size 30MB
+    }
+    header X-Content-Type-Options nosniff
+    header Referrer-Policy strict-origin-when-cross-origin
+
+    # These routes belong to the independent editor, not the PhotoAI API.
+    @editor_api path /api/auth/* /api/assets /api/assets/* /api/sessions /api/sessions/* /api/runs/* /api/generations /api/batches /api/batches/* /events/*
+    handle @editor_api {
+        reverse_proxy retouch-api:7302 {
+            header_up -Authorization
+            flush_interval -1
+        }
+    }
+    @main_api path /api/* /media/*
+    handle @main_api {
+        reverse_proxy main-api:8000 {
+            header_up -Authorization
+            flush_interval -1
+        }
+    }
+    @editor_pages path /photoai-import /auth /create /editor /editor/* /marketing /marketing/* /batch /batch/* /candidates/* /assets/*
+    handle @editor_pages {
+        reverse_proxy retouch-web:80 {
+            header_up -Authorization
+        }
+    }
+    handle {
+        reverse_proxy main-web:3000 {
+            header_up -Authorization
+        }
+    }
+}
+
+# Only S3 data API is exposed. Bucket remains private; image URLs are short-lived signatures.
+# No Basic Auth here: cross-origin canvas fetch must not receive an auth challenge.
+{$OBJECTS_HOST} {
+    request_body {
+        max_size 1MB
+    }
+    @read method GET HEAD OPTIONS
+    handle @read {
+        reverse_proxy minio:9000
+    }
+    handle {
+        respond "Method not available" 405
+    }
+}

@@ -55,3 +55,6 @@ Thumbs.db
 .idea/
 
 项目书/
+
+# Independent upstream checkout; pinned source and local patch live beside it.
+integrations/ai-retouch-agent/

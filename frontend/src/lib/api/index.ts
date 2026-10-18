@@ -27,6 +27,7 @@ export {
 // 媒体/素材 API
 export {
   uploadMedia,
+  getMedia,
   uploadManyMedia,
   getAssets,
   getAssetStats,

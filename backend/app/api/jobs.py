@@ -35,6 +35,30 @@ router = APIRouter(prefix="/api/jobs", tags=["jobs"])
 MEDIA_REQUIRED_AGENTS = frozenset({"post", "coach"})
 
 
+@router.get("/{job_id}/retouch-advice", summary="Convert saved Post advice to an unapplied slider draft")
+def get_retouch_advice(
+    job_id: str,
+    media_id: str,
+    job_store: JobStore = Depends(get_job_store),
+    result_store: ResultStore = Depends(get_result_store),
+) -> dict:
+    from app.orchestration.retouch_advice import convert_post_advice
+
+    job = job_store.get(job_id)
+    if job is None:
+        raise ApiError("JOB_NOT_FOUND", status_code=404)
+    # Do not attach another photo's advice, or guess ownership in batch analysis.
+    if job.media_ids != [media_id]:
+        raise ApiError("VALIDATION_ERROR", status_code=400, detail={"reason": "single_photo_job_media_mismatch"})
+    post = next((r for r in result_store.list_latest_by_job(job_id) if r.agent == "post"), None)
+    if post is None or post.status != "succeeded":
+        raise ApiError("VALIDATION_ERROR", status_code=409, detail={"reason": "post_result_not_ready"})
+    source = post.payload.get("xmp_params", post.payload.get("xmpParams"))
+    if not isinstance(source, dict) or not source or len(source) > 100:
+        raise ApiError("VALIDATION_ERROR", status_code=422, detail={"reason": "structured_post_parameters_required"})
+    return convert_post_advice(source, job_id=job_id, media_id=media_id, result_id=post.id)
+
+
 @router.post(
     "",
     response_model=CreateJobResponse,

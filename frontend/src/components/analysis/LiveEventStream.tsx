@@ -81,7 +81,7 @@ export function LiveEventStream({
       {/* Footer */}
       <div className="px-3.5 py-2 border-t border-slate-100">
         <p className="text-xs text-slate-500">
-          ● SSE 连接稳定 · 双 Agent 并行运行中
+          任务创建后，将在此接收 Agent 进度消息
         </p>
       </div>
     </div>

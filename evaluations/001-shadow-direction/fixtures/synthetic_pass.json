@@ -1,0 +1,13 @@
+{
+  "trace_kind": "synthetic_judge_test_only",
+  "note": "人工构造，仅验证判定器。不是当前 Agent 的真实输出，不代表修复完成或幅度已校准。",
+  "execution_status": "not_executed",
+  "tool_calls": [{
+    "tool": "adjust_image",
+    "params": {"highlights": -0.1, "shadows": -0.05, "contrast": 0.05, "saturation": -0.1, "vibrance": -0.05, "clarity": 0.05}
+  }],
+  "unsupported_handling": {
+    "Blacks2012": {"action": "skipped", "reason": "工具没有独立黑色色阶，跳过。"},
+    "Dehaze": {"action": "skipped", "reason": "工具没有去朦胧，跳过。"}
+  }
+}

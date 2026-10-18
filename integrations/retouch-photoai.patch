@@ -1,0 +1,1500 @@
+diff --git a/backend/app/agent/graph.py b/backend/app/agent/graph.py
+index 78a4eb1..d4bf9df 100644
+--- a/backend/app/agent/graph.py
++++ b/backend/app/agent/graph.py
+@@ -1,4 +1,5 @@
+ from functools import lru_cache
++import re
+ from typing import TypedDict
+ 
+ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+@@ -9,12 +10,18 @@ from app.agent.plan import PlanError, validate
+ from app.services import tools as tool_service
+ from app.tools import UnknownTool, label_of
+ 
+-_SYSTEM = """你是电商图片修图助手，通过调用工具完成用户的修图请求。
++_SYSTEM = """你是摄影与图片修图助手，通过调用工具完成用户的修图请求。
+ 
+ 规则：
+ - 只能使用已提供的工具。可以一次安排多步，按完成先后调用；后一步默认依赖前一步。
+ - 能一步完成的不要拆成多步，最多 8 步。
+ - 缺失参数用画布信息与常识补齐，可推断的参数不要反问用户。
++- 用户仅询问之前是否执行、是否按参数调整时，只回答当前可验证的信息，不再调用工具。
++  没有历史执行记录时明确无法核实，不能为了回答问题再执行一次调色。
++- 摄影软件的曝光 EV 不等于 brightness：brightness 是线性亮度乘数减1，
++  如 +0.25EV 对应约 2**0.25-1=0.189，不是0.25。Lightroom 的高光、
++  阴影等 -100~100 参数不等于本工具 -1~1 算法；不可原值照搬或冒称效果等价。
++  仅询问参数兼容性时解释差异，不执行。实际执行只使用本工具范围内的小幅参数。
+ - 图层与选区是两个独立维度：layer_id 决定改哪一层，选区决定改哪块区域。
+   用户点名了图层（如「物体2」「背景」「主体」）就把它的 id 或名字填进 layer_id。
+ - 画布摘要标明已有选区时，那就是用户要改的物体：局部消除、替换、提升为图层
+@@ -23,6 +30,11 @@ _SYSTEM = """你是电商图片修图助手，通过调用工具完成用户的
+ - 一句话要改多个图层时，按图层拆成多步，每步只填一个 layer_id。
+ - 改颜色、换材质、换成某物用 replace_region 并点名 layer_id；
+   只改整张背景才用 replace_background。adjust_image 只做明暗冷暖，不做改色。
++- 改变动物脸型、身体形态或眼神表情，用 replace_region 描述目标效果，
++  保持原有摄影质感与主体特征；不要用调色或缩放整个图层冒充语义编辑。
++- 人物瘦身或身形修改不需要先拆层。必须切回原图并先由用户圈出局部区域；
++  无选区只说明如何圈选，不调用 split_layers 或整层 replace_region。
++  当前画布说明自动拆层不可用时，不安排拆层步骤。
+ - 翻转画面用 flip_layer；说了角度用 rotate_layer。
+ - 用户要求拆层、把物体独立成层时，使用 split_layers 或 promote_object_to_layer。
+ - 拆层默认不拆文字，只有用户明确要求时才传 include_text。
+@@ -84,6 +96,13 @@ def _graph():
+ 
+ async def run(goal: str, context: str) -> tuple[str, list[dict]]:
+     """规划并校验一轮指令，返回答复与尚未下发的计划。"""
++    # Explicit execution checks are read-only, even if the text quotes editing
++    # parameters. Do not turn a question about prior work into a second edit.
++    check = goal.strip()
++    if (re.match(r"^(是按照|是按|是否已经|有没有按|刚才是否|刚才有没有)", check)
++            and re.search(r"[吗么?？]\s*$", check)
++            and not re.search(r"请再|重新执行|帮我再", check)):
++        return "本次只核对，不再次修改图片。请查看历史中的已完成步骤及参数；摄影软件参数与本工具参数不能直接等同，当前缺少完整执行记录，无法确认逐项一致。", []
+     state = await _graph().ainvoke({"goal": goal, "context": context, "plan": [], "reply": ""})
+     return spoken(state["reply"], state["plan"]), state["plan"]
+ 
+diff --git a/backend/app/agent/llm.py b/backend/app/agent/llm.py
+index 1a49bc0..b390e76 100644
+--- a/backend/app/agent/llm.py
++++ b/backend/app/agent/llm.py
+@@ -14,6 +14,28 @@ class PlannerUnavailable(Exception):
+     """规划模型未配置或不可用。"""
+ 
+ 
++def planner_failure_message(exc: Exception) -> str | None:
++    """Translate structured provider errors without exposing response bodies or keys."""
++    seen = set()
++    current = exc
++    while current is not None and id(current) not in seen:
++        seen.add(id(current))
++        body = getattr(current, "body", None)
++        detail = body.get("error", body) if isinstance(body, dict) else {}
++        code = detail.get("code") if isinstance(detail, dict) else None
++        status = getattr(current, "status_code", None)
++        if code == "Arrearage":
++            return "阿里云规划模型调用被拒绝（Arrearage）：请检查 API Key 所属账户的欠费或账务限制，处理后重新发送指令。"
++        if status in (401, 403):
++            return "规划模型认证或权限校验失败，请检查 API Key、业务空间及模型权限。"
++        if status == 429:
++            return "规划模型请求受到限流，请稍后重新发送指令。"
++        if isinstance(current, TimeoutError) or type(current).__name__ == "APITimeoutError":
++            return "规划模型响应超时，请稍后重新发送指令。"
++        current = current.__cause__ or current.__context__
++    return None
++
++
+ def _schema_of(spec: ToolSpec) -> dict:
+     function = convert_to_openai_function(spec.params)
+     function["name"] = spec.name
+@@ -38,7 +60,9 @@ def planner():
+     model = ChatOpenAI(
+         model=settings.planner_model,
+         api_key=settings.dashscope_api_key,
+-        base_url=f"{settings.dashscope_base_url}{_COMPATIBLE_PATH}",
++        base_url=f"{settings.dashscope_base_url.rstrip('/')}{_COMPATIBLE_PATH}",
+         temperature=0,
++        timeout=45,
++        max_retries=0,
+     )
+     return model.bind_tools([_schema_of(spec) for spec in SPECS])
+diff --git a/backend/app/edits/mask.py b/backend/app/edits/mask.py
+index c2ef5dc..661c32f 100644
+--- a/backend/app/edits/mask.py
++++ b/backend/app/edits/mask.py
+@@ -34,9 +34,11 @@ def rasterize_strokes(
+     *,
+     radius: float,
+     base: Image.Image | None = None,
++    shape: str = "lasso",
++    operation: str = "add",
+ ) -> Image.Image:
+     """笔画自动闭合成面积：圈住物体就选中整块，短笔画仍只得一条带子。"""
+-    mask = base.convert("L") if base is not None else Image.new("L", size, 0)
++    mask = Image.new("L", size, 0)
+     draw = ImageDraw.Draw(mask)
+     width, height = size
+     brush = max(2, int(min(width, height) * radius))
+@@ -47,26 +49,32 @@ def rasterize_strokes(
+         if len(points) == 1:
+             _dot(draw, points[0], brush)
+             continue
+-        if len(points) > 2:
++        if shape == "lasso" and len(points) > 2:
+             draw.polygon(points, fill=255)
+         # 轮廓带兜底：自相交的乱涂即使填不出内部，涂过的地方也一定被选中
+         draw.line(points, fill=255, width=brush, joint="curve")
+         for point in points:
+             _dot(draw, point, brush)
+-    return mask
++    if base is None:
++        return Image.new("L", size, 0) if operation == "subtract" else mask
++    return ImageChops.subtract(base.convert("L"), mask) if operation == "subtract" else union(base, mask)
+ 
+ 
+ def union(left: Image.Image, right: Image.Image) -> Image.Image:
+     return ImageChops.lighter(left.convert("L"), right.convert("L"))
+ 
+ 
+-def apply_masked(source: bytes, edited: bytes, mask: bytes) -> bytes:
++def apply_masked(source: bytes, edited: bytes, mask: bytes, *, strict: bool = False) -> bytes:
+     """只把选区内的像素换成编辑结果，选区外保持原图。"""
+     original = Image.open(io.BytesIO(source)).convert("RGBA")
+     result = Image.open(io.BytesIO(edited)).convert("RGBA")
+     if result.size != original.size:
+         result = result.resize(original.size, Image.Resampling.LANCZOS)
+-    luma = to_luma(mask, original.size).filter(ImageFilter.GaussianBlur(1.2))
++    selected = to_luma(mask, original.size)
++    luma = selected.filter(ImageFilter.GaussianBlur(1.2))
++    if strict:
++        # Feather inward only: pixels outside the confirmed mask stay original.
++        luma = ImageChops.multiply(luma, selected)
+     return _png(Image.composite(result, original, luma))
+ 
+ 
+diff --git a/backend/app/providers/dashscope.py b/backend/app/providers/dashscope.py
+index bbccbab..32bc737 100644
+--- a/backend/app/providers/dashscope.py
++++ b/backend/app/providers/dashscope.py
+@@ -1,6 +1,7 @@
+ import asyncio
+ import base64
+ import io
++import logging
+ 
+ import httpx
+ from PIL import Image
+@@ -24,6 +25,8 @@ _EDIT_TIMEOUT = 180.0
+ _POLL_INTERVAL = 3.0
+ _POLL_TIMEOUT = 300.0
+ _TERMINAL = {"SUCCEEDED", "FAILED", "CANCELED", "UNKNOWN"}
++_MAX_INPUT_BYTES = 10 * 1024 * 1024
++logger = logging.getLogger(__name__)
+ 
+ _PENDING = (10, "排队中")
+ 
+@@ -88,9 +91,10 @@ class DashScopeImageProvider(ImageProvider):
+         return results[0]
+ 
+     def _payload(self, request: GenerateRequest) -> dict:
++        _validate_negative_prompt(self._model, request.negative_prompt)
+         # 本地对象存储无法被模型服务访问，参考图一律以 base64 内联
+         content: list[dict] = [
+-            {"image": f"data:image/png;base64,{base64.b64encode(raw).decode()}"}
++            {"image": _inline_image(raw)}
+             for raw in request.references
+         ]
+         content.append({"text": request.prompt})
+@@ -112,8 +116,9 @@ class DashScopeImageProvider(ImageProvider):
+         }
+ 
+     def _edit_payload(self, request: EditRequest) -> dict:
++        _validate_negative_prompt(self._edit_model, request.negative_prompt)
+         content = [
+-            {"image": f"data:image/png;base64,{base64.b64encode(request.image).decode()}"},
++            {"image": _inline_image(request.image)},
+             {"text": request.prompt},
+         ]
+         parameters: dict = {"n": request.count, "watermark": False}
+@@ -186,6 +191,43 @@ class DashScopeImageProvider(ImageProvider):
+         return body
+ 
+ 
++def _inline_image(data: bytes) -> str:
++    # PhotoAI can hand off original JPEG/WebP bytes, not only processed PNGs.
++    # Label the real format rather than declaring every input to be PNG.
++    try:
++        with Image.open(io.BytesIO(data)) as image:
++            mime = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp"}.get(image.format)
++            if not mime or not 1 <= min(image.size) or max(image.size) > 8000 or max(image.size) / min(image.size) > 10:
++                raise ProviderError("图像模型需要有效的 JPG、PNG 或 WebP，边长不超过8000且宽高比不超过10:1。")
++            if len(data) > _MAX_INPUT_BYTES:
++                # Only encode a transport copy. Keep the stored original, canvas
++                # size and alpha unchanged; do not repeat completed edits.
++                rgba = image.convert("RGBA")
++                transparent = rgba.getchannel("A").getextrema()[0] < 255
++                prepared = rgba if transparent else rgba.convert("RGB")
++                image_format = "WEBP" if transparent else "JPEG"
++                for quality in (95, 90, 85, 75, 60, 45):
++                    buffer = io.BytesIO()
++                    prepared.save(buffer, image_format, quality=quality)
++                    candidate = buffer.getvalue()
++                    if len(candidate) <= _MAX_INPUT_BYTES:
++                        logger.info("Model transport image encoded: input_bytes=%s output_bytes=%s format=%s quality=%s size=%s",
++                                    len(data), len(candidate), image_format, quality, image.size)
++                        data = candidate
++                        mime = "image/webp" if transparent else "image/jpeg"
++                        break
++                else:
++                    raise ProviderError("图片压缩后仍超过模型10MB限制，请缩小图片后重试。")
++    except (OSError, ValueError) as exc:
++        raise ProviderError("无法识别待编辑图片，请重新导入有效照片。") from exc
++    return f"data:{mime};base64,{base64.b64encode(data).decode()}"
++
++
++def _validate_negative_prompt(model: str, negative_prompt: str | None) -> None:
++    if model.startswith("qwen-image-2.1") and negative_prompt:
++        raise ProviderError("当前图像模型不支持反向提示词，请将要求写入正向描述。")
++
++
+ def _extract_urls(output: dict) -> list[str]:
+     urls = [
+         item["image"]
+diff --git a/backend/app/routers/health.py b/backend/app/routers/health.py
+index 2cf64aa..3c0c24d 100644
+--- a/backend/app/routers/health.py
++++ b/backend/app/routers/health.py
+@@ -5,6 +5,7 @@ from fastapi import APIRouter
+ from sqlalchemy import text
+ 
+ from app import storage
++from app.config import get_settings
+ from app.db import SessionDep
+ 
+ router = APIRouter(prefix="/health", tags=["health"])
+@@ -19,9 +20,20 @@ async def _probe(awaitable: Awaitable) -> str:
+ 
+ 
+ @router.get("")
+-async def health(session: SessionDep) -> dict[str, str]:
++async def health(session: SessionDep) -> dict:
+     database, object_storage = await asyncio.gather(
+         _probe(session.execute(text("select 1"))),
+         _probe(asyncio.to_thread(storage.ensure_bucket)),
+     )
+-    return {"api": "ok", "database": database, "storage": object_storage}
++    settings = get_settings()
++    return {
++        "api": "ok", "database": database, "storage": object_storage,
++        # Configuration visibility only; never expose credentials or claim a
++        # provider call has succeeded just because a key is present.
++        "models": {
++            "image_provider": settings.image_provider,
++            "image_model": settings.image_edit_model,
++            "planner_model": settings.planner_model,
++            "credentials_configured": bool(settings.dashscope_api_key),
++        },
++    }
+diff --git a/backend/app/routers/sessions.py b/backend/app/routers/sessions.py
+index c18432d..dc7a0fd 100644
+--- a/backend/app/routers/sessions.py
++++ b/backend/app/routers/sessions.py
+@@ -147,6 +147,8 @@ async def create_selection(
+                 payload.revision,
+                 [[(point.x, point.y) for point in stroke] for stroke in payload.strokes],
+                 payload.radius,
++                shape=payload.shape,
++                operation=payload.operation,
+             )
+         else:
+             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "请点选或涂抹选区")
+diff --git a/backend/app/schemas/session.py b/backend/app/schemas/session.py
+index ff5f8c0..ec40854 100644
+--- a/backend/app/schemas/session.py
++++ b/backend/app/schemas/session.py
+@@ -1,6 +1,6 @@
+ import uuid
+ from datetime import datetime
+-from typing import Annotated
++from typing import Annotated, Literal
+ 
+ from pydantic import BaseModel, Field
+ 
+@@ -39,6 +39,8 @@ class SelectIn(BaseModel):
+     points: list[PointIn] = []
+     strokes: list[list[PointIn]] = []
+     radius: float = Field(default=0.03, ge=0.005, le=0.12)
++    shape: Literal["paint", "lasso"] = "lasso"
++    operation: Literal["add", "subtract"] = "add"
+     append: bool = False
+ 
+ 
+diff --git a/backend/app/services/agent.py b/backend/app/services/agent.py
+index 9c77944..54113e5 100644
+--- a/backend/app/services/agent.py
++++ b/backend/app/services/agent.py
+@@ -7,11 +7,15 @@ from sqlalchemy.orm.attributes import flag_modified
+ 
+ from app import agent
+ from app.agent import plan as plan_mod
++from app.agent.llm import planner_failure_message
++from app.config import get_settings
+ from app.layers import Layer, LayerDocument, LayerKind
+ from app.models import AgentRun, EditSession, ToolRun
+ from app.models.tool_run import RunStatus
+ from app.services import assets, runs, selections, tools
+ from app.tools import spec_of
++from app.tools.context import ToolError
++from app.tools.region import is_body_edit, original_body_layer, selection_mask, validate_body_mask
+ 
+ logger = logging.getLogger(__name__)
+ 
+@@ -41,6 +45,8 @@ async def describe(session: AsyncSession, record: EditSession) -> str:
+         f"图层 {len(document.layers)} 个，自下而上（{'、'.join(names)}）",
+         "layer_id 填图层 id 或名字；不填则作用在选区下最上层图像，换背景作用在背景层",
+         f"修订号 {record.revision}",
++        "身形编辑必须在原图局部选区进行，禁止先自动拆层",
++        f"自动拆层{'已显式配置分割模式' if get_settings().matting_provider == 'rembg' else '不可用：当前为简化或回退模式'}",
+     ]
+ 
+     current = await assets.get_for_user(session, record.user_id, record.current_asset_id)
+@@ -66,21 +72,47 @@ def _layer_name(layer: Layer) -> str:
+ async def respond(session: AsyncSession, record: EditSession, goal: str) -> AgentRun:
+     """规划一轮指令并落库。多步计划先停住等确认，单步直接开跑。"""
+     revision = record.revision
++    # rollback expires ORM attributes, including primary keys. Keep scalar IDs
++    # before planning so a provider failure can still be saved asynchronously.
++    user_id, session_id = record.user_id, record.id
+     reply, steps, error = "", [], None
+ 
+     try:
+-        reply, steps = await agent.run(goal, await describe(session, record))
++        if is_body_edit(goal):
++            document = LayerDocument.model_validate(record.document)
++            original_body_layer(record, document)
++            mask = await selection_mask(session, record, None)
++            validate_body_mask(mask, (document.width, document.height))
++            selected = await selections.get(record.id, record.revision)
++            if not selected or not selected.get("mask_asset_id"):
++                raise ToolError("选区已失效，请在原图重新圈选后发送。")
++            steps = plan_mod.validate([{"tool": "replace_region", "params": {
++                "layer_id": "base", "revision": record.revision,
++                "mask_asset_id": selected["mask_asset_id"],
++                "prompt": f"仅在已选腰部或躯干区域内轻微修改身形：{goal[:250]}。保持自然摄影质感、衣服纹理、人物身份、脸部、手部、姿态和背景，不新增物体、不制造透明缺口。",
++            }}])
++            steps[0]["status"] = plan_mod.WAITING
++            reply = "将仅编辑当前圈选区域，不拆层。请确认选区避开脸、手及背景，再点击执行计划；生成式编辑仍需检查人物与服装是否自然。"
++        else:
++            reply, steps = await agent.run(goal, await describe(session, record))
+         steps = await _pin_selection(session, record, steps)
++    except ToolError as exc:
++        error = str(exc)
+     except agent.PlannerUnavailable as exc:
+         error = str(exc)
+-    except Exception:
+-        logger.exception("指令规划异常 session_id=%s", record.id)
++    except Exception as exc:
++        error = planner_failure_message(exc)
++        if error:
++            logger.warning("规划模型不可用 session_id=%s error_type=%s", session_id, type(exc).__name__)
++        else:
++            logger.exception("指令规划异常 session_id=%s", session_id)
++            error = "规划失败，请重试"
+         await session.rollback()
+-        error = "规划失败，请重试"
+ 
+     if error:
++        reply, steps = "", []
+         status = RunStatus.FAILED
+-    elif plan_mod.needs_confirm(steps):
++    elif plan_mod.needs_confirm(steps) or any(step["status"] == plan_mod.WAITING for step in steps):
+         status = RunStatus.QUEUED
+     elif steps:
+         status = RunStatus.RUNNING
+@@ -88,8 +120,8 @@ async def respond(session: AsyncSession, record: EditSession, goal: str) -> Agen
+         status = RunStatus.SUCCEEDED
+ 
+     turn = AgentRun(
+-        user_id=record.user_id,
+-        session_id=record.id,
++        user_id=user_id,
++        session_id=session_id,
+         revision=revision,
+         goal=goal,
+         reply=reply,
+diff --git a/backend/app/services/assets.py b/backend/app/services/assets.py
+index ae22515..f9d38b0 100644
+--- a/backend/app/services/assets.py
++++ b/backend/app/services/assets.py
+@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
+ from app import storage
+ from app.models import Asset, EditSession, SessionAsset
+ from app.models.asset import AssetKind, AssetSource
+-from app.services.images import ImageMeta, probe
++from app.services.images import MAX_DERIVED_FILE_BYTES, MAX_FILE_BYTES, ImageMeta, probe
+ 
+ # 遮罩、抠图层是会话内部产物，创作页历史素材不单独摊开
+ _WORKING = {AssetKind.MASK, AssetKind.SUBJECT, AssetKind.BACKGROUND}
+@@ -27,7 +27,7 @@ async def create_from_bytes(
+     meta: ImageMeta | None = None,
+ ) -> Asset:
+     """校验图片、写入对象存储并落库。所有素材以 user_id 为前缀隔离。"""
+-    meta = meta or probe(data)
++    meta = meta or probe(data, max_bytes=MAX_FILE_BYTES if source == AssetSource.UPLOAD else MAX_DERIVED_FILE_BYTES)
+     asset_id = uuid.uuid4()
+     key = _storage_key(user_id, asset_id, meta.extension)
+ 
+diff --git a/backend/app/services/images.py b/backend/app/services/images.py
+index 26f6be6..6f3441f 100644
+--- a/backend/app/services/images.py
++++ b/backend/app/services/images.py
+@@ -4,6 +4,9 @@ from dataclasses import dataclass
+ from PIL import Image, UnidentifiedImageError
+ 
+ MAX_FILE_BYTES = 20 * 1024 * 1024
++# Lossless RGBA edit results can be much larger than the uploaded JPEG.
++# Retain the 50 MP bound; allow its encoded working image without recompression.
++MAX_DERIVED_FILE_BYTES = 256 * 1024 * 1024
+ MAX_PIXELS = 50_000_000
+ MIN_SIDE = 32
+ 
+@@ -26,17 +29,19 @@ class ImageMeta:
+     has_alpha: bool
+ 
+ 
+-def probe(data: bytes) -> ImageMeta:
++def probe(data: bytes, *, max_bytes: int = MAX_FILE_BYTES) -> ImageMeta:
+     """校验图片并提取元信息。格式以实际解码结果为准，不采信文件扩展名。"""
+     if not data:
+         raise ImageRejected("文件为空")
+-    if len(data) > MAX_FILE_BYTES:
+-        raise ImageRejected(f"文件超过 {MAX_FILE_BYTES // 1024 // 1024} MB 上限")
++    if len(data) > max_bytes:
++        raise ImageRejected(f"文件超过 {max_bytes // 1024 // 1024} MB 上限")
+ 
+     try:
+         with Image.open(io.BytesIO(data)) as image:
+             image_format = image.format or ""
+             width, height = image.size
++            if width * height > MAX_PIXELS:
++                raise ImageRejected("图片像素总量过大")
+             has_alpha = image.mode in {"RGBA", "LA", "PA"} or "transparency" in image.info
+             # 触发完整解码以暴露截断或损坏的数据
+             image.load()
+diff --git a/backend/app/services/selections.py b/backend/app/services/selections.py
+index ece79bb..03654a2 100644
+--- a/backend/app/services/selections.py
++++ b/backend/app/services/selections.py
+@@ -5,7 +5,7 @@ import uuid
+ from sqlalchemy.ext.asyncio import AsyncSession
+ 
+ from app import events, storage
+-from app.edits.mask import overlay_png, rasterize_strokes, to_luma, union
++from app.edits.mask import overlay_png, rasterize_strokes, to_luma
+ from app.edits.segment import segment_points, warm_embedding
+ from app.models import EditSession
+ from app.models.asset import AssetKind, AssetSource
+@@ -79,6 +79,9 @@ async def select_strokes(
+     revision: int,
+     strokes: list[list[tuple[float, float]]],
+     radius: float,
++    *,
++    shape: str = "lasso",
++    operation: str = "add",
+ ) -> dict:
+     _guard(record, revision)
+     if not any(strokes):
+@@ -93,9 +96,7 @@ async def select_strokes(
+         asset = await assets.get_for_user(session, record.user_id, asset_id)
+         if asset is not None:
+             base = to_luma(await storage.get(asset.storage_key), size)
+-    mask = rasterize_strokes(size, strokes, radius=radius, base=base)
+-    if base is not None:
+-        mask = union(base, mask)
++    mask = rasterize_strokes(size, strokes, radius=radius, base=base, shape=shape, operation=operation)
+     return await _store(session, record, revision, overlay_png(mask), markers)
+ 
+ 
+diff --git a/backend/app/services/tools.py b/backend/app/services/tools.py
+index 5d19254..6580da9 100644
+--- a/backend/app/services/tools.py
++++ b/backend/app/services/tools.py
+@@ -10,6 +10,7 @@ from app.models.tool_run import RunStatus
+ from app.providers import ProviderError
+ from app.queue import enqueue
+ from app.services import assets, runs, sessions
++from app.services.images import ImageRejected
+ from app.tools import UnknownTool, spec_of
+ from app.tools.context import ToolError
+ 
+@@ -58,7 +59,7 @@ async def execute(session: AsyncSession, run: ToolRun) -> None:
+         await runs.start(session, run)
+         result = await spec.handler(session, run)
+         await _record(session, run, result)
+-    except (ProviderError, UnknownTool, ToolError) as exc:
++    except (ProviderError, UnknownTool, ToolError, ImageRejected) as exc:
+         await runs.finish(session, run, status=RunStatus.FAILED, error=str(exc))
+     except Exception:
+         logger.exception("工具执行异常 tool=%s run_id=%s", run.tool, run.id)
+diff --git a/backend/app/tools/layers.py b/backend/app/tools/layers.py
+index 7348e08..344e67f 100644
+--- a/backend/app/tools/layers.py
++++ b/backend/app/tools/layers.py
+@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
+ from sqlalchemy.ext.asyncio import AsyncSession
+ 
+ from app import storage
++from app.config import get_settings
+ from app.edits.mask import apply_masked
+ from app.edits.ocr import detect_text
+ from app.edits.pixels import remove_background
+@@ -65,6 +66,8 @@ async def _fill_hole(session: AsyncSession, run: ToolRun, source: bytes, mask: b
+ 
+ 
+ async def split_layers_exec(session: AsyncSession, run: ToolRun) -> dict:
++    if get_settings().matting_provider != "rembg":
++        raise ToolError("当前简化抠图或自动回退模式不支持可靠拆层。请保留原图，用笔刷确认局部选区后编辑；不要先拆层做人像瘦身。")
+     record = await require_session(session, run)
+     document = document_of(record)
+     if already_split(document):
+diff --git a/backend/app/tools/region.py b/backend/app/tools/region.py
+index 943b7cf..6e77228 100644
+--- a/backend/app/tools/region.py
++++ b/backend/app/tools/region.py
+@@ -1,9 +1,14 @@
+ from pydantic import Field
++import io
++import re
++
++from PIL import Image, ImageChops
+ from sqlalchemy.ext.asyncio import AsyncSession
+ 
+-from app.edits.mask import apply_masked
++from app.edits.mask import apply_masked, to_luma
++from app.config import get_settings
+ from app.edits.split import EmptyCut, alpha_mask
+-from app.layers import Layer, LayerDocument
++from app.layers import BASE_LAYER_ID, Layer, LayerDocument
+ from app.models.asset import AssetKind
+ from app.models.tool_run import ToolRun
+ from app.providers import EditRequest, get_image_provider
+@@ -28,6 +33,40 @@ class ReplaceRegionIn(LayerRef, MaskRef):
+     prompt: str = Field(min_length=1, max_length=500)
+ 
+ 
++def is_body_edit(text: str) -> bool:
++    text = text.strip()
++    if re.match(r"^(是否|是不是|有没有|是按|刚才|你刚)", text) and re.search(r"[吗?？]$", text):
++        return False
++    return bool(re.search(r"瘦|纤细|纖細|收腰|塑形|减肥|slim|slender|thinner|leaner|body.?shape|reshape.*body|waist", text, re.I))
++
++
++def original_body_layer(record, document: LayerDocument, layer_id: str | None = None) -> Layer:
++    if len(document.layers) != 1 or document.layers[0].id != BASE_LAYER_ID:
++        raise ToolError("身形编辑请先切回原图或重新导入原图，不使用拆层结果继续编辑。")
++    layer = resolve_target(document, layer_id or BASE_LAYER_ID)
++    if (len(document.layers) != 1 or layer.id != BASE_LAYER_ID
++            or layer.asset_id != record.original_asset_id
++            or record.current_asset_id != record.original_asset_id
++            or layer.transform.model_dump() != {"x": 0, "y": 0, "scale_x": 1, "scale_y": 1, "rotation": 0}
++            or (layer.width, layer.height) != (document.width, document.height)
++            or not layer.visible or layer.opacity != 1):
++        raise ToolError("身形编辑请先切回原图或重新导入原图，不使用拆层结果或已修改候选图继续叠加。")
++    return layer
++
++
++def validate_body_mask(mask: bytes | None, size: tuple[int, int]) -> None:
++    if mask is None:
++        raise ToolError("请先用笔刷在原图上涂抹或圈选腰部、躯干或上臂等小范围，避开脸和手，再发送身形修改要求；无需拆层。")
++    with Image.open(io.BytesIO(mask)) as image:
++        if image.size != size:
++            raise ToolError("选区尺寸已失效，请在原图重新选择。")
++    luma = to_luma(mask)
++    histogram = luma.histogram()
++    covered = size[0] * size[1] - histogram[0]
++    if covered == 0 or covered >= size[0] * size[1] / 2:
++        raise ToolError("身形编辑需要非空的小范围选区，当前为空或覆盖至少半张照片，请缩小到目标腰部、躯干或上臂。")
++
++
+ def _target(document: LayerDocument, layer_id: str | None, mask: bytes | None) -> Layer:
+     """点名了图层就改那一层；否则取选区下最上层，没选区就取最上层图像。"""
+     if not layer_id and mask is not None:
+@@ -35,6 +74,18 @@ def _target(document: LayerDocument, layer_id: str | None, mask: bytes | None) -
+     return resolve_target(document, layer_id)
+ 
+ 
++def validate_body_candidate(edited: bytes, mask: bytes, size: tuple[int, int]) -> None:
++    """Only confirmed pixels can be adopted; transparent pixels outside them are discarded."""
++    with Image.open(io.BytesIO(edited)) as image:
++        rgba = image.convert("RGBA")
++        if rgba.size != size:
++            rgba = rgba.resize(size, Image.Resampling.LANCZOS)
++        selected = to_luma(mask, size).point(lambda value: 255 if value else 0)
++        holes = ImageChops.multiply(ImageChops.invert(rgba.getchannel("A")), selected)
++        if holes.getbbox():
++            raise ToolError("人像候选在选区内包含透明缺口，未采用结果，原图已保留。可缩小选区后重新发送要求。")
++
++
+ def _region(source: bytes, mask: bytes | None, layer: Layer, canvas: tuple[int, int]) -> bytes:
+     """无选区就用该层透明通道当区域改整层；有选区则取与该层的交集。"""
+     if mask is None:
+@@ -52,7 +103,19 @@ async def _edit_region(session: AsyncSession, run: ToolRun, *, scoped: str, whol
+         raise ToolError("选区已过期，请重新选择")
+ 
+     document = document_of(record)
++    body_edit = is_body_edit(run.params.get("prompt", ""))
++    if body_edit:
++        original_body_layer(record, document, run.params.get("layer_id"))
++        if run.params.get("revision") != record.revision:
++            raise ToolError("身形编辑需要确认当前修订号的局部选区，请重新发送身形要求。")
++        selected = await selections.get(record.id, record.revision)
++        if not selected or selected.get("mask_asset_id") != run.params.get("mask_asset_id"):
++            raise ToolError("确认后的选区已改变或失效，请重新发送身形要求并确认。")
++    if get_settings().matting_provider != "rembg" and {"background", "subject"}.issubset({item.id for item in document.layers}):
++        raise ToolError("当前拆层结果未使用明确的人物分割模式，请回到原图并选择局部区域后编辑。")
+     mask = await selection_mask(session, record, run.params.get("mask_asset_id"))
++    if body_edit:
++        validate_body_mask(mask, (document.width, document.height))
+     layer = _target(document, run.params.get("layer_id"), mask)
+ 
+     await runs.report(session, run, 20, "读取图层")
+@@ -66,7 +129,10 @@ async def _edit_region(session: AsyncSession, run: ToolRun, *, scoped: str, whol
+         )
+     )[0]
+     await runs.report(session, run, 85, "合并结果")
+-    output = apply_masked(source, edited, local_mask)
++    if body_edit:
++        with Image.open(io.BytesIO(source)) as image:
++            validate_body_candidate(edited, local_mask, image.size)
++    output = apply_masked(source, edited, local_mask, strict=body_edit)
+     await selections.clear(record.id)
+     return await write_layer_image(session, run, record, layer.id, output, AssetKind.GENERATED)
+ 
+diff --git a/backend/app/tools/retouch.py b/backend/app/tools/retouch.py
+index 98dda33..d4ed678 100644
+--- a/backend/app/tools/retouch.py
++++ b/backend/app/tools/retouch.py
+@@ -8,7 +8,7 @@ from app.models.asset import AssetKind
+ from app.models.tool_run import ToolRun
+ from app.services import runs
+ from app.tools.base import LayerRef, ToolSpec
+-from app.tools.context import document_of, require_session
++from app.tools.context import ToolError, document_of, require_session
+ from app.tools.target import layer_image, resolve_target, write_layer_image
+ 
+ _LAYER = "layer_id"
+@@ -19,6 +19,9 @@ class RemoveBackgroundIn(LayerRef):
+ 
+ 
+ class AdjustIn(LayerRef):
++    # Client-provided provenance only; never forwarded to pixel processing or the model.
++    advice_context: str | None = Field(default=None, max_length=16000)
++    expected_revision: int | None = Field(default=None, ge=0)
+     brightness: float = Field(default=0, ge=-1, le=1)
+     contrast: float = Field(default=0, ge=-1, le=1)
+     highlights: float = Field(default=0, ge=-1, le=1)
+@@ -44,10 +47,13 @@ async def remove_background_exec(session: AsyncSession, run: ToolRun) -> dict:
+ 
+ async def adjust_image_exec(session: AsyncSession, run: ToolRun) -> dict:
+     record = await require_session(session, run)
++    if run.params.get('expected_revision') is not None and record.revision != run.params['expected_revision']:
++        raise ToolError('画布已变更，请重新预览后应用调色。')
+     layer = resolve_target(document_of(record), run.params.get(_LAYER))
+     await runs.report(session, run, 20, "读取图层")
+     data = await layer_image(session, record, layer)
+-    params = {key: value for key, value in run.params.items() if value and key != _LAYER}
++    params = {key: value for key, value in run.params.items()
++              if value and key in AdjustIn.model_fields and key not in {_LAYER, 'advice_context', 'expected_revision'}}
+     await runs.report(session, run, 60, "调整色彩")
+     output = await asyncio.to_thread(lambda: adjust(data, **params))
+     return await write_layer_image(session, run, record, layer.id, output, AssetKind.GENERATED)
+@@ -73,6 +79,7 @@ ADJUST_IMAGE = ToolSpec(
+     ),
+     params=AdjustIn,
+     handler=adjust_image_exec,
++    agent_hidden=("advice_context", "expected_revision"),
+     queued=True,
+     session_required=True,
+ )
+diff --git a/frontend/src/App.tsx b/frontend/src/App.tsx
+index ad43b75..72a8d67 100644
+--- a/frontend/src/App.tsx
++++ b/frontend/src/App.tsx
+@@ -9,6 +9,7 @@ import CreatePage from '@/pages/CreatePage'
+ import EditorPage from '@/pages/EditorPage'
+ import LandingPage from '@/pages/LandingPage'
+ import MarketingPage from '@/pages/MarketingPage'
++import PhotoAIImportPage from '@/pages/PhotoAIImportPage'
+ 
+ export default function App() {
+   return (
+@@ -16,6 +17,7 @@ export default function App() {
+       <Routes>
+         <Route path="/" element={<LandingPage />} />
+         <Route path="/auth" element={<AuthPage />} />
++        <Route path="/photoai-import" element={<PhotoAIImportPage />} />
+ 
+         <Route element={<RequireAuth />}>
+           <Route element={<WorkbenchLayout />}>
+diff --git a/frontend/src/api/sessions.ts b/frontend/src/api/sessions.ts
+index 57429c0..b3161c0 100644
+--- a/frontend/src/api/sessions.ts
++++ b/frontend/src/api/sessions.ts
+@@ -122,6 +122,8 @@ export type SelectInput = {
+   points?: { x: number; y: number }[]
+   strokes?: { x: number; y: number }[][]
+   radius?: number
++  shape?: 'paint' | 'lasso'
++  operation?: 'add' | 'subtract'
+   append?: boolean
+ }
+ 
+diff --git a/frontend/src/components/editor/AgentConversation.tsx b/frontend/src/components/editor/AgentConversation.tsx
+index 1ef994c..96de626 100644
+--- a/frontend/src/components/editor/AgentConversation.tsx
++++ b/frontend/src/components/editor/AgentConversation.tsx
+@@ -95,6 +95,9 @@ function PlanActions({ turn, sessionId }: { turn: Turn; sessionId: string }) {
+     )
+   }
+   if (turn.status === 'failed') {
++    if (turn.steps.length === 0) {
++      return <p className="text-faint mr-6 text-xs">处理上述问题后，请重新发送指令。</p>
++    }
+     return (
+       <div className="mr-6">
+         <Action disabled={actions.busy} onClick={() => actions.retry(turn.id)}>
+diff --git a/frontend/src/components/editor/CanvasStage.tsx b/frontend/src/components/editor/CanvasStage.tsx
+index 83e2a34..66b1ade 100644
+--- a/frontend/src/components/editor/CanvasStage.tsx
++++ b/frontend/src/components/editor/CanvasStage.tsx
+@@ -20,6 +20,7 @@ import { useSelectStroke } from '@/hooks/useSelectStroke'
+ import { useCanvasImage } from '@/hooks/useCanvasImage'
+ import { useElementSize } from '@/hooks/useElementSize'
+ import { makeAdjustFilter, toAdjustPreview, type AdjustPreview } from '@/lib/adjustPreview'
++import { brushWidth } from '@/lib/brush'
+ import { useCanvasView } from '@/stores/canvasView'
+ import { useEditorUi, type CanvasSelection, type CropRect, type LayerPreview } from '@/stores/editorUi'
+ 
+@@ -44,7 +45,7 @@ export default function CanvasStage({
+   urls: Map<string, string>
+   selection?: CanvasSelection | null
+   onPoint?: (x: number, y: number) => void
+-  onStroke?: (points: { x: number; y: number }[]) => void
++  onStroke?: (points: { x: number; y: number }[]) => void | Promise<void>
+   onMove?: (layerId: string, x: number, y: number) => void
+   onScale?: (layerId: string, scale: number, x: number, y: number) => void
+   onEditText?: (layerId: string, text: string) => void
+@@ -69,6 +70,9 @@ export default function CanvasStage({
+   const adjustPreview = useEditorUi((state) => state.adjustPreview)
+   const layerPreview = useEditorUi((state) => state.layerPreview)
+   const selectMode = useEditorUi((state) => state.selectMode)
++  const brushRadius = useEditorUi((state) => state.brushRadius)
++  const brushOperation = useEditorUi((state) => state.brushOperation)
++  const [brushCursor, setBrushCursor] = useState<{ x: number; y: number } | null>(null)
+   const selectedLayerId = useEditorUi((state) => state.selectedLayerId)
+   const selectLayer = useEditorUi((state) => state.selectLayer)
+   const shown = useHeldCanvas(document, urls)
+@@ -120,6 +124,11 @@ export default function CanvasStage({
+     return { x, y }
+   }
+ 
++  const finishStroke = () => {
++    const points = stroke.end()
++    if (points.length && onStroke) void Promise.resolve(onStroke(points)).catch(() => {}).finally(stroke.settle)
++  }
++
+   useEffect(() => {
+     setViewport(size)
+   }, [size, setViewport])
+@@ -174,20 +183,24 @@ export default function CanvasStage({
+         scaleY={scale}
+         draggable={stageDraggable}
+         onMouseDown={(event) => {
+-          if (selectMode !== 'brush' || !onStroke) return
++            if (selectMode !== 'brush' || !onStroke || event.evt.button !== 0) return
+           const point = canvasPoint(event.target.getStage())
+           if (point) stroke.start(point)
+         }}
+         onMouseMove={(event) => {
+           if (selectMode !== 'brush' || !onStroke) return
+           const point = canvasPoint(event.target.getStage())
++            setBrushCursor(point)
+           if (point) stroke.move(point)
+         }}
+         onMouseUp={() => {
+           if (selectMode !== 'brush' || !onStroke) return
+-          const points = stroke.end()
+-          if (points.length) onStroke(points)
++            finishStroke()
+         }}
++          onMouseLeave={() => {
++            setBrushCursor(null)
++            if (selectMode === 'brush') finishStroke()
++          }}
+         onClick={(event) => {
+           if (selectMode !== 'point' || !onPoint) return
+           const picked = canvasPoint(event.target.getStage())
+@@ -227,6 +240,7 @@ export default function CanvasStage({
+               document={canvas}
+               urls={images}
+               color={color}
++              adjustLayerId={selectedLayerId}
+               layerPreview={layerPreview}
+               clip={{
+                 x: split,
+@@ -241,6 +255,7 @@ export default function CanvasStage({
+             document={canvas}
+             urls={images}
+             color={color}
++              adjustLayerId={selectedLayerId}
+             layerPreview={layerPreview}
+             interactive={interactive}
+             stageDraggable={stageDraggable}
+@@ -269,7 +284,12 @@ export default function CanvasStage({
+           />
+         )}
+ 
+-        {(selection || stroke.draft.length > 0 || point.active) && (
++         {selectMode === 'brush' && brushCursor && <KonvaLayer listening={false}>
++           <Circle x={brushCursor.x * canvas.width} y={brushCursor.y * canvas.height}
++             radius={brushWidth(canvas, brushRadius) / 2} stroke={brushOperation === 'subtract' ? '#d9534f' : '#5f98ad'}
++             strokeWidth={1.5 / scale} />
++         </KonvaLayer>}
++         {(selection || stroke.draft.length > 0 || point.active) && (
+           <SelectionOverlay
+             document={canvas}
+             selection={selection}
+@@ -402,6 +422,7 @@ function DocumentLayer({
+   document,
+   urls,
+   color,
++  adjustLayerId,
+   layerPreview,
+   clip,
+   interactive = false,
+@@ -418,6 +439,7 @@ function DocumentLayer({
+   document: LayerDocument
+   urls: Map<string, string>
+   color?: AdjustPreview | null
++  adjustLayerId?: string | null
+   layerPreview?: LayerPreview | null
+   clip?: { x: number; y: number; width: number; height: number }
+   interactive?: boolean
+@@ -435,6 +457,9 @@ function DocumentLayer({
+   const [pinned, setPinned] = useState<Pinned | null>(null)
+   const waitingStamp = useRef<string | null>(null)
+   const layers = document.layers.filter((layer) => layer.visible)
++  const colorTarget = adjustLayerId
++    ? layers.find(layer => layer.id === adjustLayerId && layer.kind === 'image')
++    : [...layers].reverse().find(layer => layer.kind === 'image')
+   const selected = layers.find((layer) => layer.id === selectedId) ?? null
+   const stamp = selected ? transformStamp(selected) : ''
+ 
+@@ -485,7 +510,7 @@ function DocumentLayer({
+             key={layer.id}
+             layer={layer}
+             url={layer.asset_id ? urls.get(layer.asset_id) : undefined}
+-            color={color ?? null}
++            color={layer.id === colorTarget?.id ? color ?? null : null}
+             preview={layerPreview?.id === layer.id ? layerPreview : null}
+             pinned={pinned?.id === layer.id ? pinned : null}
+             interactive={interactive}
+diff --git a/frontend/src/components/editor/EditorToolbar.tsx b/frontend/src/components/editor/EditorToolbar.tsx
+index 976e96f..c64e537 100644
+--- a/frontend/src/components/editor/EditorToolbar.tsx
++++ b/frontend/src/components/editor/EditorToolbar.tsx
+@@ -77,6 +77,26 @@ export default function EditorToolbar({
+             >
+               笔刷
+             </Button>
++            {ui.selectMode === 'brush' && <>
++              <select aria-label="选区形状" value={ui.brushShape} disabled={picking.busy}
++                className="rounded border px-1 py-1 text-xs"
++                onChange={e => ui.setBrush({ brushShape: e.target.value as 'paint' | 'lasso' })}>
++                <option value="paint">涂抹</option><option value="lasso">圈选</option>
++              </select>
++              <Button active={ui.brushOperation === 'subtract'} disabled={picking.busy}
++                title="只擦除选区，不擦掉照片像素"
++                onClick={() => ui.setBrush({ brushOperation: ui.brushOperation === 'add' ? 'subtract' : 'add' })}>
++                {ui.brushOperation === 'subtract' ? '擦除选区' : '添加选区'}
++              </Button>
++              <label className="flex items-center gap-1 text-xs" title="笔刷直径，以原图像素显示">
++                粗细<input aria-label="笔刷粗细" type="range" min="0.005" max="0.12" step="0.005"
++                  className="w-20" value={ui.brushRadius} disabled={picking.busy}
++                  onChange={e => ui.setBrush({ brushRadius: Number(e.target.value) })} />
++                {Math.max(2, Math.floor(Math.min(session.document.width, session.document.height) * ui.brushRadius))}px
++              </label>
++              <Button disabled={!picking.canUndo || picking.busy} onClick={picking.undo}>撤销选区</Button>
++              <Button disabled={!picking.canRedo || picking.busy} onClick={picking.redo}>重做选区</Button>
++            </>}
+             <Button
+               disabled={tools.busy || picking.busy || !picking.selection}
+               progress={running('erase_region')}
+diff --git a/frontend/src/components/editor/LayerPanel.tsx b/frontend/src/components/editor/LayerPanel.tsx
+index 1281b3b..9bd23ee 100644
+--- a/frontend/src/components/editor/LayerPanel.tsx
++++ b/frontend/src/components/editor/LayerPanel.tsx
+@@ -1,6 +1,8 @@
+-import { useEffect, useState } from 'react'
++import { useEffect, useRef, useState } from 'react'
+ 
+ import type { Asset } from '@/api/assets'
++import { isTerminal, runsApi } from '@/api/runs'
++import { parsePostAdvice, readAdviceDraft, saveAdviceDraft } from '@/lib/postAdvice'
+ import { ACTION_LABELS, type Layer, type SessionDetail } from '@/api/sessions'
+ import { BackgroundForm, ExpandForm, ReplaceForm } from '@/components/editor/GenerateEdits'
+ import Button from '@/components/ui/Button'
+@@ -56,10 +58,19 @@ export default function LayerPanel({
+     <aside className="border-line bg-paper scrollbar-slim h-full w-72 shrink-0 overflow-y-auto border-l">
+       {panel === 'adjust' && (
+         <AdjustForm
++          key={session.id}
++          session={session}
+           disabled={tools.busy}
+-          onApply={(params) =>
+-            tools.invoke('adjust_image', { ...params, layer_id: selectedLayerId })
+-          }
++          onApply={async (params) => {
++            const body = await tools.invokeAsync('adjust_image', { ...params, layer_id: selectedLayerId, expected_revision: session.revision })
++            let run = body.run
++            const deadline = Date.now() + 120000
++            while (!isTerminal(run.status) && Date.now() < deadline) {
++              await new Promise(resolve => setTimeout(resolve, 1000))
++              run = await runsApi.get(run.id)
++            }
++            if (run.status !== 'succeeded') throw new Error(run.error || '尚未确认应用成功，请查看编辑记录，勿重复应用。')
++          }}
+         />
+       )}
+       {panel === 'background' && (
+@@ -203,11 +214,14 @@ export default function LayerPanel({
+         ) : (
+           <ol className="space-y-1.5">
+             {history.map((entry) => (
+-              <li key={entry.seq} className="flex items-baseline justify-between gap-2 text-xs">
++              <li key={entry.seq} className="text-xs">
++                <div className="flex items-baseline justify-between gap-2">
+                 <span className="text-ink">{ACTION_LABELS[entry.action] ?? entry.action}</span>
+                 <span className="text-faint shrink-0 tabular-nums">
+                   {formatDateTime(entry.created_at)}
+                 </span>
++                </div>
++                {entry.action === 'adjust_image' && <AdjustmentAudit params={entry.params} />}
+               </li>
+             ))}
+           </ol>
+@@ -217,6 +231,21 @@ export default function LayerPanel({
+   )
+ }
+ 
++function AdjustmentAudit({ params }: { params: Record<string, unknown> }) {
++  if (typeof params.advice_context !== 'string') return null
++  try {
++    const advice = parsePostAdvice(JSON.parse(params.advice_context))
++    return <details className="text-muted mt-1 text-[11px] leading-relaxed">
++      <summary className="cursor-pointer">查看 Post 转换与实际应用值</summary>
++      <p className="break-all">来源任务：{advice.source_job_id} · {advice.policy_version}</p>
++      {advice.converted.map(r => <p key={r.parameter}>{r.label}：原建议 {r.source_value} → 初始 {r.value} → 实际 {String(params[r.target] ?? 0)}</p>)}
++      {Object.entries(params).filter(([k,v]) => typeof v === 'number' && !['expected_revision', ...advice.converted.map(r => r.target)].includes(k) && v !== 0)
++        .map(([k,v]) => <p key={k}>手动调整 {k}：{String(v)}</p>)}
++      {advice.skipped.map(r => <p key={r.parameter}>跳过 {r.parameter}{r.source_value !== undefined ? `（${String(r.source_value)}）` : ''}：{r.reason}</p>)}
++    </details>
++  } catch { return <p className="text-xs">调色来源记录格式无效</p> }
++}
++
+ function LayerRow({
+   layer,
+   active,
+@@ -505,25 +534,63 @@ function LayerControls({
+ }
+ 
+ function AdjustForm({
++  session,
+   disabled,
+   onApply,
+ }: {
++  session: SessionDetail
+   disabled: boolean
+-  onApply: (params: Record<string, number>) => void
++  onApply: (params: Record<string, unknown>) => Promise<void>
+ }) {
+-  const [values, setValues] = useState<Record<string, number>>({})
++  const [draft, setDraft] = useState(() => readAdviceDraft(session.id))
++  const [values, setValues] = useState<Record<string, number>>(() => draft && !draft.applied && draft.revision === session.revision ? draft.values : {})
++  const [saving, setSaving] = useState(false)
++  const [error, setError] = useState('')
++  const previewRevision = useRef(session.revision)
+   const setAdjustPreview = useEditorUi((state) => state.setAdjustPreview)
+   const touched = Object.keys(values).length > 0
+ 
+-  useEffect(() => () => setAdjustPreview(null), [setAdjustPreview])
++  useEffect(() => {
++    setAdjustPreview(values)
++    return () => setAdjustPreview(null)
++  }, [values, setAdjustPreview])
+ 
+-  const clear = () => {
++  useEffect(() => {
++    if (previewRevision.current === session.revision) return
++    previewRevision.current = session.revision
+     setValues({})
+     setAdjustPreview(null)
++    if (draft) saveAdviceDraft(session.id, { ...draft, values: {} })
++  }, [session.revision, session.id, draft, setAdjustPreview])
++
++  const change = (next: Record<string, number>) => {
++    setValues(next)
++    if (draft) {
++      const updated = { ...draft, values: next, revision: session.revision, applied: false }
++      saveAdviceDraft(session.id, updated)
++      setDraft(updated)
++    }
++  }
++
++  const clear = () => {
++    change({})
++    setAdjustPreview(null)
+   }
+ 
+   return (
+     <Section title="调色">
++      {draft && <div className="mb-3 space-y-2 text-[11px] leading-relaxed">
++        <p className="text-brand font-medium">Post 建议 · {draft.applied ? '已应用' : '待预览确认'}</p>
++        <p>已转换为近似初始值，不等同于 Lightroom 效果；可微调。清晰度需应用后查看。</p>
++        <details><summary className="cursor-pointer">原建议 → 滑杆值（{draft.advice.converted.length} 项）</summary>
++          {draft.advice.converted.map(r => <p key={r.parameter}>{r.label}：{r.source_value} → {r.value}{r.clamped ? '（已限制幅度）' : ''} · 近似</p>)}
++          <p className="break-all">来源：{draft.advice.source_job_id}</p>
++        </details>
++        {draft.advice.skipped.length > 0 && <details open><summary>跳过 {draft.advice.skipped.length} 项</summary>
++          {draft.advice.skipped.map(r => <p key={r.parameter}>{r.parameter}{r.source_value !== undefined ? `（${String(r.source_value)}）` : ''}：{r.reason}</p>)}
++        </details>}
++        {draft.revision !== session.revision && !touched && <p>画布已变更，未自动重放旧建议。</p>}
++      </div>}
+       <p className="text-faint mb-2.5 text-[11px] leading-relaxed">
+         拖动即在画布预览，锐化与清晰度需应用后可见。点应用写入新版本，可撤销。
+       </p>
+@@ -536,34 +603,46 @@ function AdjustForm({
+             origin={0}
+             min={field.min ?? -1}
+             max={1}
+-            step={0.05}
++            step={0.01}
+             format={(value) => value.toFixed(2)}
+-            disabled={disabled}
++            disabled={disabled || saving}
+             onInput={(value) => setAdjustPreview({ ...values, [field.key]: value })}
+             onCommit={(value) => {
+               const next = { ...values, [field.key]: value }
+-              setValues(next)
++              change(next)
+               setAdjustPreview(next)
+             }}
+           />
+         ))}
+         <div className="flex gap-2">
+-          <Button variant="outline" block disabled={disabled || !touched} onClick={clear}>
++          <Button variant="outline" block disabled={disabled || saving || !touched} onClick={clear}>
+             重置
+           </Button>
+           <Button
+             variant="solid"
+             block
+-            disabled={disabled || !touched}
++            disabled={disabled || saving || !touched}
+             title={touched ? '写入当前调色，可撤销' : '先拖动滑杆再应用'}
+-            onClick={() => {
+-              onApply(values)
+-              clear()
++            onClick={async () => {
++              setSaving(true)
++              setError('')
++              try {
++                await onApply({ ...values, ...(draft ? { advice_context: JSON.stringify(draft.advice) } : {}) })
++                if (draft) {
++                  const applied = { ...draft, values: {}, applied: true }
++                  saveAdviceDraft(session.id, applied)
++                  setDraft(applied)
++                }
++                setValues({})
++                setAdjustPreview(null)
++              } catch (e) { setError(e instanceof Error ? e.message : '应用失败，已保留滑杆值。') }
++              finally { setSaving(false) }
+             }}
+           >
+             应用
+           </Button>
+         </div>
++        {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
+       </div>
+     </Section>
+   )
+@@ -627,6 +706,8 @@ function SliderField({
+         onPointerDown={(event) => event.currentTarget.setPointerCapture(event.pointerId)}
+         onPointerUp={commit}
+         onLostPointerCapture={commit}
++        onKeyUp={commit}
++        onBlur={commit}
+       />
+     </label>
+   )
+diff --git a/frontend/src/components/editor/SelectionOverlay.tsx b/frontend/src/components/editor/SelectionOverlay.tsx
+index 3d6867e..e75d42a 100644
+--- a/frontend/src/components/editor/SelectionOverlay.tsx
++++ b/frontend/src/components/editor/SelectionOverlay.tsx
+@@ -4,7 +4,7 @@ import { Circle, Group, Image as KonvaImage, Layer as KonvaLayer, Line, Text } f
+ import type { LayerDocument } from '@/api/sessions'
+ import { useCanvasImage } from '@/hooks/useCanvasImage'
+ import { brushWidth } from '@/lib/brush'
+-import type { CanvasSelection } from '@/stores/editorUi'
++import { useEditorUi, type CanvasSelection } from '@/stores/editorUi'
+ 
+ export function SelectionOverlay({
+   document,
+@@ -26,6 +26,10 @@ export function SelectionOverlay({
+   onMaskReady?: () => void
+ }) {
+   const mask = useCanvasImage(selection?.maskUrl)
++  const radius = useEditorUi(state => state.brushRadius)
++  const shape = useEditorUi(state => state.brushShape)
++  const operation = useEditorUi(state => state.brushOperation)
++  const color = operation === 'subtract' ? '#d9534f' : '#5f98ad'
+   const maskReady = Boolean(mask && selection && mask.url === selection.maskUrl)
+   const wasReady = useRef(false)
+   const pins = markers ?? selection?.markers ?? []
+@@ -55,13 +59,16 @@ export function SelectionOverlay({
+           listening={false}
+         />
+       )}
++      {draft.length === 1 && pending && <Circle
++        x={draft[0].x * document.width} y={draft[0].y * document.height}
++        radius={brushWidth(document, radius) / 2} fill={color} opacity={0.45} />}
+       {draft.length > 1 && pending && (
+         <Line
+           points={draft.flatMap((point) => [point.x * document.width, point.y * document.height])}
+-          closed={draft.length > 2}
+-          fill={draft.length > 2 ? '#5f98ad' : undefined}
+-          stroke="#5f98ad"
+-          strokeWidth={brushWidth(document)}
++          closed={shape === 'lasso' && draft.length > 2}
++          fill={shape === 'lasso' && draft.length > 2 ? color : undefined}
++          stroke={color}
++          strokeWidth={brushWidth(document, radius)}
+           lineCap="round"
+           lineJoin="round"
+           opacity={0.45}
+diff --git a/frontend/src/hooks/useSelectStroke.ts b/frontend/src/hooks/useSelectStroke.ts
+index 44e0f11..7a4c114 100644
+--- a/frontend/src/hooks/useSelectStroke.ts
++++ b/frontend/src/hooks/useSelectStroke.ts
+@@ -31,7 +31,7 @@ export function useSelectStroke() {
+       const stroke = drawing.current ? points.current : []
+       drawing.current = false
+       // 松手后先留着预览，等服务端遮罩上屏再收，避免中间空一帧
+-      if (stroke.length < 2) {
++      if (stroke.length < 1) {
+         settle()
+         return []
+       }
+diff --git a/frontend/src/hooks/useSelection.ts b/frontend/src/hooks/useSelection.ts
+index 156c22e..9ff10d2 100644
+--- a/frontend/src/hooks/useSelection.ts
++++ b/frontend/src/hooks/useSelection.ts
+@@ -3,8 +3,7 @@ import { useMutation } from '@tanstack/react-query'
+ 
+ import { sessionsApi, type SelectInput, type Selection } from '@/api/sessions'
+ import { errorMessage } from '@/hooks/useAuth'
+-import { BRUSH_RADIUS } from '@/lib/brush'
+-import { createSelectionHistory, inputsOf, type SelectionEntry } from '@/lib/selectionHistory'
++import { createSelectionHistory, selectionRequests, type SelectionEntry } from '@/lib/selectionHistory'
+ import { toast } from '@/stores/toasts'
+ import { useEditorUi, type CanvasSelection } from '@/stores/editorUi'
+ 
+@@ -18,7 +17,7 @@ function toCanvas(selection: Selection): CanvasSelection {
+ }
+ 
+ function entryOf(input: SelectInput): SelectionEntry | null {
+-  if (input.strokes?.[0]) return { kind: 'stroke', points: input.strokes[0] }
++  if (input.strokes?.[0]) return { kind: 'stroke', points: input.strokes[0], radius: input.radius, shape: input.shape, operation: input.operation }
+   if (input.points?.[0]) return { kind: 'point', point: input.points[0] }
+   return null
+ }
+@@ -28,6 +27,7 @@ export function useSelection(sessionId: string, revision: number) {
+   const dropStaleSelection = useEditorUi((state) => state.dropStaleSelection)
+   const selection = useEditorUi((state) => state.selection)
+   const history = useRef(createSelectionHistory())
++  const strokeLock = useRef(false)
+   const [, bump] = useState(0)
+   const touch = () => bump((value) => value + 1)
+ 
+@@ -35,7 +35,8 @@ export function useSelection(sessionId: string, revision: number) {
+     dropStaleSelection(revision)
+     history.current.reset()
+     touch()
+-  }, [revision, dropStaleSelection])
++    setSelection(null)
++  }, [sessionId, revision, dropStaleSelection, setSelection])
+ 
+   const selectMode = useEditorUi((state) => state.selectMode)
+ 
+@@ -69,13 +70,9 @@ export function useSelection(sessionId: string, revision: number) {
+     mutationFn: async (entries: SelectionEntry[]) => {
+       await sessionsApi.clearSelection(sessionId)
+       if (!entries.length) return null
+-      const { strokes, points } = inputsOf(entries)
+       let body: Selection | null = null
+-      if (points.length) {
+-        body = await sessionsApi.select(sessionId, { revision, points, append: false })
+-      }
+-      if (strokes.length) {
+-        body = await sessionsApi.select(sessionId, { revision, strokes, radius: BRUSH_RADIUS })
++      for (const input of selectionRequests(entries, revision)) {
++        body = await sessionsApi.select(sessionId, input)
+       }
+       return body
+     },
+@@ -97,8 +94,18 @@ export function useSelection(sessionId: string, revision: number) {
+         points: [{ x, y }],
+         append: Boolean(selection && selection.revision === revision),
+       }),
+-    addStroke: (points: { x: number; y: number }[]) =>
+-      select.mutate({ revision, strokes: [points], radius: BRUSH_RADIUS }),
++    addStroke: async (points: { x: number; y: number }[]) => {
++      if (strokeLock.current) return
++      strokeLock.current = true
++      const { brushRadius, brushShape, brushOperation } = useEditorUi.getState()
++      try {
++        // A refreshed editor has no local selection/history. Do not silently append
++        // to an invisible mask left in Redis by an older visit.
++        if (!selection || selection.revision !== revision) await sessionsApi.clearSelection(sessionId)
++        await select.mutateAsync({ revision, strokes: [points], radius: brushRadius, shape: brushShape, operation: brushOperation })
++      }
++      finally { strokeLock.current = false }
++    },
+     clear: () => clear.mutate(),
+     undo: () => {
+       const next = history.current.undo()
+diff --git a/frontend/src/hooks/useSessions.ts b/frontend/src/hooks/useSessions.ts
+index 3e61754..d1fc9a5 100644
+--- a/frontend/src/hooks/useSessions.ts
++++ b/frontend/src/hooks/useSessions.ts
+@@ -154,6 +154,7 @@ export function useSessionTools(id: string) {
+ 
+   return {
+     invoke: (tool: string, params?: Record<string, unknown>) => invoke.mutate({ tool, params }),
++    invokeAsync: (tool: string, params?: Record<string, unknown>) => invoke.mutateAsync({ tool, params }),
+     undo: () => runHistory(() => undo.mutate()),
+     redo: () => runHistory(() => redo.mutate()),
+     busy,
+diff --git a/frontend/src/lib/brush.ts b/frontend/src/lib/brush.ts
+index b6e11dd..b2eb859 100644
+--- a/frontend/src/lib/brush.ts
++++ b/frontend/src/lib/brush.ts
+@@ -1,6 +1,6 @@
+ /** 笔刷粗细按画布短边取比例。前端显式带上同一个值，预览与服务端遮罩才同宽。 */
+ export const BRUSH_RADIUS = 0.03
+ 
+-export function brushWidth(canvas: { width: number; height: number }) {
+-  return Math.max(2, Math.min(canvas.width, canvas.height) * BRUSH_RADIUS)
++export function brushWidth(canvas: { width: number; height: number }, radius = BRUSH_RADIUS) {
++  return Math.max(2, Math.floor(Math.min(canvas.width, canvas.height) * radius))
+ }
+diff --git a/frontend/src/lib/postAdvice.ts b/frontend/src/lib/postAdvice.ts
+new file mode 100644
+index 0000000..9b7ac75
+--- /dev/null
++++ b/frontend/src/lib/postAdvice.ts
+@@ -0,0 +1,48 @@
++/** Advice is data, never a chat instruction. Session storage contains no credentials. */
++export type PostAdvice = {
++  policy_version: 'post-sliders-v1'
++  source_job_id: string
++  source_media_id: string
++  source_result_id: string
++  params: Record<string, number>
++  converted: { parameter: string; label: string; source_value: number; source_unit: string;
++    target: string; value: number; approximate: boolean; clamped: boolean; rule: string; preview: boolean }[]
++  skipped: { parameter: string; source_value?: number | string | boolean | null; reason: string }[]
++}
++export type AdviceDraft = { advice: PostAdvice; values: Record<string, number>; revision: number; applied: boolean }
++const TARGETS = new Set(['contrast', 'highlights', 'shadows', 'saturation', 'vibrance', 'clarity'])
++const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
++const short = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length <= 300
++
++export function parsePostAdvice(value: unknown): PostAdvice {
++  if (!value || typeof value !== 'object' || JSON.stringify(value).length > 16000) throw new Error('后期建议格式无效')
++  const a = value as PostAdvice
++  if (a.policy_version !== 'post-sliders-v1' || ![a.source_job_id, a.source_media_id, a.source_result_id].every(short) ||
++    !a.params || typeof a.params !== 'object' || Array.isArray(a.params) ||
++    !Object.entries(a.params).every(([k, v]) => TARGETS.has(k) && finite(v) && Math.abs(v) <= 1) ||
++    !Array.isArray(a.converted) || a.converted.length > 20 ||
++    !a.converted.every(r => r && short(r.parameter) && short(r.label) && short(r.source_unit) && short(r.rule) &&
++      finite(r.source_value) && Math.abs(r.source_value) <= 100 && TARGETS.has(r.target) && finite(r.value) &&
++      r.value === a.params[r.target] && typeof r.preview === 'boolean' && typeof r.clamped === 'boolean' && r.approximate === true) ||
++    Object.keys(a.params).length !== a.converted.length || new Set(a.converted.map(r => r.target)).size !== a.converted.length ||
++    !Array.isArray(a.skipped) || a.skipped.length > 100 || !a.skipped.every(r => r && short(r.parameter) && short(r.reason))) {
++    throw new Error('后期建议格式无效，请重新从分析页导入')
++  }
++  return a
++}
++
++const key = (sessionId: string) => `photoai:post-advice:${sessionId}`
++export function saveAdviceDraft(sessionId: string, draft: AdviceDraft) {
++  sessionStorage.setItem(key(sessionId), JSON.stringify(draft))
++}
++export function readAdviceDraft(sessionId: string): AdviceDraft | null {
++  try {
++    const raw = sessionStorage.getItem(key(sessionId))
++    if (!raw) return null
++    const draft = JSON.parse(raw) as AdviceDraft
++    parsePostAdvice(draft.advice)
++    if (!Number.isInteger(draft.revision) || typeof draft.applied !== 'boolean' || !draft.values ||
++      !Object.entries(draft.values).every(([k, v]) => ['brightness','contrast','highlights','shadows','temperature','tint','saturation','vibrance','sharpness','clarity','vignette'].includes(k) && finite(v) && Math.abs(v) <= 1)) return null
++    return draft
++  } catch { return null }
++}
+diff --git a/frontend/src/lib/selectionHistory.ts b/frontend/src/lib/selectionHistory.ts
+index 9b32220..e768c62 100644
+--- a/frontend/src/lib/selectionHistory.ts
++++ b/frontend/src/lib/selectionHistory.ts
+@@ -1,9 +1,19 @@
++import type { SelectInput } from '@/api/sessions'
++
+ export type StrokePoint = { x: number; y: number }
+ 
+ export type SelectionEntry =
+-  | { kind: 'stroke'; points: StrokePoint[] }
++  | { kind: 'stroke'; points: StrokePoint[]; radius?: number; shape?: 'paint' | 'lasso'; operation?: 'add' | 'subtract' }
+   | { kind: 'point'; point: StrokePoint }
+ 
++/** Replay in order: erasing and per-stroke sizes cannot be merged into one additive request. */
++export function selectionRequests(entries: SelectionEntry[], revision: number): SelectInput[] {
++  return entries.map((entry, index) => entry.kind === 'point'
++    ? { revision, points: [entry.point], append: index > 0 }
++    : { revision, strokes: [entry.points], radius: entry.radius ?? 0.03,
++        shape: entry.shape ?? 'lasso', operation: entry.operation ?? 'add' })
++}
++
+ export function inputsOf(entries: SelectionEntry[]) {
+   return {
+     strokes: entries.filter((entry) => entry.kind === 'stroke').map((entry) => entry.points),
+diff --git a/frontend/src/pages/EditorPage.tsx b/frontend/src/pages/EditorPage.tsx
+index e7f2220..772a178 100644
+--- a/frontend/src/pages/EditorPage.tsx
++++ b/frontend/src/pages/EditorPage.tsx
+@@ -154,8 +154,8 @@ function Workspace({ sessionId }: { sessionId: string }) {
+               previous={session.previous_document}
+               urls={urls}
+               selection={picking.selection}
+-              onPoint={picking.busy ? undefined : picking.addPoint}
+-              onStroke={picking.busy ? undefined : picking.addStroke}
++              onPoint={picking.busy || tools.busy ? undefined : picking.addPoint}
++              onStroke={picking.busy || tools.busy ? undefined : picking.addStroke}
+               onMove={(layer_id, x, y) => tools.invoke('move_layer', { layer_id, x, y })}
+               onScale={(layer_id, scale, x, y) =>
+                 tools.invoke('scale_layer', { layer_id, scale_x: scale, scale_y: scale, x, y })
+@@ -229,7 +229,7 @@ function canvasHint({
+       : { mode: 'point', text: '点击物体建立选区，可连续点选 · Esc 退出' }
+   }
+   if (selectMode === 'brush') {
+-    return { mode: 'brush', text: '按住圈出要改的区域，松手即选中圈内 · Esc 退出' }
++    return { mode: 'brush', text: '涂抹只选笔迹，圈选填满内部；可调粗细、擦除或撤销选区 · Esc 退出' }
+   }
+   return { mode: 'idle', text: null }
+ }
+diff --git a/frontend/src/pages/PhotoAIImportPage.tsx b/frontend/src/pages/PhotoAIImportPage.tsx
+new file mode 100644
+index 0000000..44db47a
+--- /dev/null
++++ b/frontend/src/pages/PhotoAIImportPage.tsx
+@@ -0,0 +1,85 @@
++import { useEffect, useRef, useState } from 'react'
++import { useNavigate } from 'react-router-dom'
++
++import { assetsApi, ACCEPTED_TYPES, MAX_UPLOAD_BYTES } from '@/api/assets'
++import { sessionsApi } from '@/api/sessions'
++import { parsePostAdvice, saveAdviceDraft } from '@/lib/postAdvice'
++import { useEditorUi } from '@/stores/editorUi'
++import { errorMessage, useAuthActions, useCurrentUser } from '@/hooks/useAuth'
++
++const PHOTOAI_ORIGIN = new URL(import.meta.env.VITE_PHOTOAI_ORIGIN || 'http://localhost:3000').origin
++
++/** Local adapter: credentials remain in this service; only image bytes cross the frame boundary. */
++export default function PhotoAIImportPage() {
++  const navigate = useNavigate()
++  const { user, isLoading } = useCurrentUser()
++  const { login, register } = useAuthActions()
++  const busy = useRef(false)
++  const [message, setMessage] = useState('请在 PhotoAI 中选择照片并发送。')
++  const [username, setUsername] = useState('')
++  const [password, setPassword] = useState('')
++  const [mode, setMode] = useState<'login' | 'register'>('login')
++  const action = mode === 'login' ? login : register
++
++  useEffect(() => {
++    if (!user || window.parent === window) return
++    function reply(data: Record<string, unknown>) {
++      window.parent.postMessage({ ...data, version: 1 }, PHOTOAI_ORIGIN)
++    }
++    async function receive(event: MessageEvent) {
++      if (event.origin !== PHOTOAI_ORIGIN || event.source !== window.parent) return
++      const data = event.data
++      if (!data || data.type !== 'photoai:import' || data.version !== 1 ||
++        typeof data.requestId !== 'string' || data.requestId.length > 100 || busy.current) return
++      const file = data.file
++      if (!(file instanceof File) || !ACCEPTED_TYPES.includes(file.type) ||
++        !file.size || file.size > MAX_UPLOAD_BYTES) {
++        reply({ type: 'photoai:error', requestId: data.requestId, message: '仅支持不超过 20 MB 的 JPG、PNG、WebP 图片。' })
++        return
++      }
++      busy.current = true
++      setMessage('正在导入照片并创建会话…')
++      try {
++        const advice = data.advice === undefined ? null : parsePostAdvice(data.advice)
++        const asset = await assetsApi.upload(file)
++        const session = await sessionsApi.create({ current_asset_id: asset.id, title: `PhotoAI · ${file.name}` })
++        if (advice) saveAdviceDraft(session.id, { advice, values: advice.params, revision: session.revision, applied: false })
++        useEditorUi.getState().setAdjustPreview(null)
++        useEditorUi.getState().selectLayer(null)
++        useEditorUi.getState().setPanel(advice ? 'adjust' : null)
++        reply({ type: 'photoai:imported', requestId: data.requestId, sessionId: session.id })
++        navigate(`/editor/${session.id}`, { replace: true })
++      } catch (error) {
++        const message = errorMessage(error)
++        setMessage(message)
++        reply({ type: 'photoai:error', requestId: data.requestId, message })
++      } finally {
++        busy.current = false
++      }
++    }
++    window.addEventListener('message', receive)
++    reply({ type: 'photoai:ready' })
++    return () => window.removeEventListener('message', receive)
++  }, [user, navigate])
++
++  if (isLoading) return <p className="p-8">正在检查修图账号…</p>
++  if (user) return <div className="p-8"><h2 className="text-xl font-bold">修图服务已连接</h2><p className="mt-3">{message}</p></div>
++  return (
++    <form className="mx-auto mt-12 flex max-w-sm flex-col gap-4 p-6" onSubmit={(event) => {
++      event.preventDefault()
++      action.mutate({ username, password })
++    }}>
++      <h2 className="text-xl font-bold">{mode === 'login' ? '登录修图工作台' : '注册修图账号'}</h2>
++      <p className="text-sm">账号由修图服务单独管理。登录后可接收 PhotoAI 照片。</p>
++      <label>用户名<input className="mt-1 w-full rounded border p-2" required value={username}
++        onChange={(event) => setUsername(event.target.value)} autoComplete="username" /></label>
++      <label>密码<input className="mt-1 w-full rounded border p-2" required type="password" value={password}
++        onChange={(event) => setPassword(event.target.value)} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} /></label>
++      {action.isError && <p role="alert">{errorMessage(action.error)}</p>}
++      <button className="rounded bg-black p-2 text-white" disabled={action.isPending} type="submit">{action.isPending ? '处理中…' : '继续'}</button>
++      <button type="button" onClick={() => { action.reset(); setMode(mode === 'login' ? 'register' : 'login') }}>
++        {mode === 'login' ? '没有账号？注册' : '已有账号？登录'}
++      </button>
++    </form>
++  )
++}
+diff --git a/frontend/src/stores/editorUi.ts b/frontend/src/stores/editorUi.ts
+index e7862ed..92fc13c 100644
+--- a/frontend/src/stores/editorUi.ts
++++ b/frontend/src/stores/editorUi.ts
+@@ -40,6 +40,10 @@ type EditorUi = {
+   selectMode: SelectMode | null
+   selection: CanvasSelection | null
+   splitIncludeText: boolean
++  brushRadius: number
++  brushShape: 'paint' | 'lasso'
++  brushOperation: 'add' | 'subtract'
++  setBrush: (brush: { brushRadius?: number; brushShape?: 'paint' | 'lasso'; brushOperation?: 'add' | 'subtract' }) => void
+   adjustPreview: Record<string, number> | null
+   layerPreview: LayerPreview | null
+   selectLayer: (id: string | null) => void
+@@ -97,6 +101,10 @@ export const useEditorUi = create<EditorUi>((set) => ({
+   selectMode: null,
+   selection: null,
+   splitIncludeText: false,
++  brushRadius: 0.03,
++  brushShape: 'paint',
++  brushOperation: 'add',
++  setBrush: (brush) => set(brush),
+   adjustPreview: null,
+   layerPreview: null,
+ 

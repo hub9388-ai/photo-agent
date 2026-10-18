@@ -1,0 +1,48 @@
+# Isolated local acceptance infrastructure. Never exposes services to the LAN.
+name: photoai-retouch-smoke
+services:
+  postgres:
+    image: postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+    ports: ["127.0.0.1:7311:5432"]
+    environment:
+      POSTGRES_USER: retouch
+      POSTGRES_PASSWORD: ${RETOUCH_DB_PASSWORD:?Run Prepare first}
+      POSTGRES_DB: retouch
+    volumes: ["pg_data:/var/lib/postgresql/data"]
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U retouch -d retouch"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  redis:
+    image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+    ports: ["127.0.0.1:7312:6379"]
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    mem_limit: 128m
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  minio:
+    image: photoai-minio-smoke:7aac2a2
+    pull_policy: build
+    build:
+      context: .
+      dockerfile: minio-smoke.Dockerfile
+    command: server /data --console-address ":9001"
+    ports: ["127.0.0.1:7313:9000", "127.0.0.1:7314:9001"]
+    environment:
+      MINIO_ROOT_USER: retouch
+      MINIO_ROOT_PASSWORD: ${RETOUCH_STORAGE_PASSWORD:?Run Prepare first}
+    volumes: ["minio_data:/data"]
+    mem_limit: 768m
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:9000/minio/health/ready"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+volumes:
+  pg_data:
+  minio_data:

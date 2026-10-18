@@ -1,0 +1,20 @@
+# Direct dependencies pinned to the dedicated, verified local runtime.
+# Transitive dependencies still require a Linux lock/build verification before public launch.
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+pydantic-settings==2.15.0
+sqlalchemy[asyncio]==2.0.52
+asyncpg==0.31.0
+alembic==1.19.1
+arq==0.28.0
+redis==5.3.1
+boto3==1.43.80
+pillow==12.3.0
+python-multipart==0.0.32
+bcrypt==5.0.0
+pyjwt==2.13.0
+httpx==0.28.1
+langgraph==1.2.11
+langgraph-checkpoint-postgres==3.1.2
+langchain-core==1.6.0
+langchain-openai==1.6.0

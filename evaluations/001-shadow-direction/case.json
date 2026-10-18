@@ -1,0 +1,28 @@
+{
+  "case_id": "photo-retouch-001",
+  "version": "1.0",
+  "title": "阴影方向反转与未支持摄影参数被擅自替代",
+  "user_goal": "忧郁、沉闷的风格",
+  "input": {
+    "source_parameter_system": "摄影软件 XMP 参考值，非 Pillow 入参",
+    "post_xmp_params": {"Highlights2012": -40, "Shadows2012": -10, "Blacks2012": -20, "Contrast2012": 8, "Saturation": -22, "Vibrance": -10, "Clarity2012": 15, "Dehaze": 8},
+    "historical_conflicting_text": "阴影：建议降低，模型建议值 -10。含义：提亮暗部，恢复前景或主体层次。",
+    "context": "4096×3072 双猫照片，base 图层，无局部选区。文字存在方向矛盾，不能静默把负向阴影变成正向。"
+  },
+  "contract": {
+    "description": "本案例回归目标，不代表历史系统已经实现，也不是经过校准的数值换算表。",
+    "required_tool": "adjust_image",
+    "required_call_count": 1,
+    "supported_directions": {"highlights": "negative", "shadows": "negative", "contrast": "positive", "saturation": "negative", "vibrance": "negative", "clarity": "positive"},
+    "unsupported_source_features": ["Blacks2012", "Dehaze"],
+    "unsupported_policy": "明确跳过并说明理由；当前案例未授权用其他参数近似替代。",
+    "must_remain_neutral": ["brightness", "sharpness", "temperature", "tint", "vignette"]
+  },
+  "out_of_scope": [
+    "摄影参数幅度与 Pillow 效果的精确等价性",
+    "图片审美、主体保真与像素质量",
+    "端到端稳定性、延迟与成本统计",
+    "当前只核对结构化记录，不全面判断自然语言解释质量",
+    "确认冲突后请求澄清或不执行是另一种合理策略，本案例尚未覆盖该分支"
+  ]
+}

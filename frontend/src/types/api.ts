@@ -68,6 +68,7 @@ export interface CreateJobResponse {
 }
 
 export interface JobDetailResponse {
+  userGoal?: string
   jobId: string
   type: JobType
   trigger: JobTrigger

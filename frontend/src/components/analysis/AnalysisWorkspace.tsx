@@ -12,6 +12,7 @@ import {
   createJob,
   getJob,
   getJobResults,
+  getMedia,
   retryAgent,
   subscribeJobEvents,
   uploadMedia,
@@ -34,7 +35,7 @@ import type {
 } from "@/types/api"
 
 import { AgentProgressCard, type AgentProgress } from "./AgentProgressCard"
-import { AnalysisResultPanel } from "./AnalysisResultPanel"
+import { AnalysisResultPanel, type PostParameter } from "./AnalysisResultPanel"
 import { LiveEventStream, type SSEEvent } from "./LiveEventStream"
 import { UploadPlaceholder, UploadPreviewPanel } from "./UploadPreviewPanel"
 
@@ -53,14 +54,20 @@ interface PostPanelResult {
   summary: string
   suggestions: PostSuggestion[]
   params?: Record<string, string>
+  parameters?: PostParameter[]
+  originalText?: string
+  sourceNote?: string
 }
 
 interface CoachPanelResult {
   sections: { title: string; items: string[] }[]
+  originalText?: string
   practiceTask?: {
     title: string
     description: string
     isChallenge?: boolean
+    requirements?: string[]
+    acceptance?: string[]
   }
 }
 
@@ -245,10 +252,10 @@ const parameterLabels: Record<string, { label: string; meaning: string; unit?: s
   exposure2012: { label: "曝光补偿", meaning: "控制整张照片的整体明暗", unit: "EV" },
   contrast: { label: "对比度", meaning: "拉开明暗反差，增强画面力度" },
   contrast2012: { label: "对比度", meaning: "拉开明暗反差，增强画面力度" },
-  highlights: { label: "高光", meaning: "压回天空、水面反光等亮部细节" },
-  highlights2012: { label: "高光", meaning: "压回天空、水面反光等亮部细节" },
-  shadows: { label: "阴影", meaning: "提亮暗部，恢复前景或主体层次" },
-  shadows2012: { label: "阴影", meaning: "提亮暗部，恢复前景或主体层次" },
+  highlights: { label: "高光", meaning: "控制亮部明暗" },
+  highlights2012: { label: "高光", meaning: "控制亮部明暗" },
+  shadows: { label: "阴影", meaning: "控制暗部明暗" },
+  shadows2012: { label: "阴影", meaning: "控制暗部明暗" },
   whites: { label: "白色色阶", meaning: "控制最亮区域的白场强度" },
   whites2012: { label: "白色色阶", meaning: "控制最亮区域的白场强度" },
   blacks: { label: "黑色色阶", meaning: "控制最暗区域的黑场和厚重感" },
@@ -257,7 +264,7 @@ const parameterLabels: Record<string, { label: string; meaning: string; unit?: s
   clarity2012: { label: "清晰度", meaning: "增强中间调局部对比，让纹理更明确" },
   dehaze: { label: "去朦胧", meaning: "增强空气透视和远景通透度" },
   dehaze2012: { label: "去朦胧", meaning: "增强空气透视和远景通透度" },
-  vibrance: { label: "自然饱和度", meaning: "优先增强低饱和颜色，较不容易过艳" },
+  vibrance: { label: "自然饱和度", meaning: "调整低饱和颜色的鲜艳程度" },
   saturation: { label: "饱和度", meaning: "整体增加或减少色彩浓度" },
   temperature: { label: "色温", meaning: "调整画面冷暖倾向", unit: "K" },
   temp: { label: "色温", meaning: "调整画面冷暖倾向", unit: "K" },
@@ -287,18 +294,8 @@ function parseNumericValue(value: unknown): number | null {
 
 function formatSignedValue(value: number, unit = ""): string {
   const absValue = Math.abs(value)
-  const fixed = Number.isInteger(absValue) ? absValue.toString() : absValue.toFixed(1)
+  const fixed = absValue.toString()
   return `${value > 0 ? "+" : value < 0 ? "-" : ""}${fixed}${unit ? ` ${unit}` : ""}`
-}
-
-function suggestedRange(value: number, unit = ""): string {
-  if (value === 0) return `0${unit ? ` ${unit}` : ""} 附近`
-  const absValue = Math.abs(value)
-  const lower = value > 0 ? absValue * 0.65 : absValue * 1.35
-  const upper = value > 0 ? absValue * 1.35 : absValue * 0.65
-  const left = value > 0 ? lower : -lower
-  const right = value > 0 ? upper : -upper
-  return `${formatSignedValue(left, unit)} ~ ${formatSignedValue(right, unit)}`
 }
 
 function formatParameterSuggestion(key: string, value: unknown): string {
@@ -310,7 +307,42 @@ function formatParameterSuggestion(key: string, value: unknown): string {
 
   const direction =
     numericValue > 0 ? "增加" : numericValue < 0 ? "降低" : "保持"
-  return `${meta.label}：建议${direction}，参考区间 ${suggestedRange(numericValue, meta.unit)}。含义：${meta.meaning}。`
+  return `${meta.label}：${typeof value === "string" ? value : formatSignedValue(numericValue, meta.unit)}（${direction}）`
+}
+
+function parameterEffect(key: string, value: unknown): string {
+  const numeric = parseNumericValue(value)
+  if (numeric === null || numeric === 0) return getParameterMeta(key).meaning
+  const normalized = normalizeParamKey(key).toLowerCase().replace(/2012$/, "")
+  const effects: Record<string, [string, string]> = {
+    exposure: ["降低整体曝光", "提高整体曝光"],
+    highlights: ["压低亮部", "提亮亮部"],
+    shadows: ["压暗暗部", "提亮暗部"],
+    blacks: ["压低黑场", "抬高黑场"],
+    whites: ["压低白场", "抬高白场"],
+    contrast: ["减弱明暗反差", "增强明暗反差"],
+    saturation: ["降低色彩浓度", "增加色彩浓度"],
+    vibrance: ["降低自然饱和度", "增加自然饱和度"],
+    clarity: ["减弱局部纹理对比", "增强局部纹理对比"],
+    dehaze: ["降低去朦胧强度", "增加去朦胧强度"],
+  }
+  return effects[normalized]?.[numeric < 0 ? 0 : 1] ?? getParameterMeta(key).meaning
+}
+
+function mapParameterRows(value: unknown): PostParameter[] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return []
+  return Object.entries(value as Record<string, unknown>)
+    .filter(([, item]) => item !== null && item !== undefined && item !== "")
+    .map(([key, item]) => ({
+      key,
+      label: getParameterMeta(key).label,
+      value: typeof item === "number" ? formatSignedValue(item, getParameterMeta(key).unit) : String(item),
+      effect: parameterEffect(key, item),
+    }))
+}
+
+function cleanSuggestion(value: string): string {
+  return value.replace(/^[\s•●▸·◎-]+/, "").trim()
 }
 
 function formatParameterObject(value: unknown): string[] {
@@ -328,143 +360,23 @@ function uniqueItems(items: string[]): string[] {
   return Array.from(new Set(items.filter(Boolean)))
 }
 
-type PreferenceStyle = "cinematic" | "ins" | "warm" | "cool" | "natural" | "dark" | "custom" | null
-
-function preferredStyle(userPreference: string): PreferenceStyle {
-  const preference = userPreference.trim().toLowerCase()
-  if (!preference) return null
-  if (/电影|cinematic|胶片|film/.test(preference)) return "cinematic"
-  if (/ins|instagram|小红书|清新|奶油|韩系|日系/.test(preference)) return "ins"
-  if (/暖|日落|夕阳|橙|金色|温暖/.test(preference)) return "warm"
-  if (/冷|蓝|清透|通透|干净/.test(preference)) return "cool"
-  if (/自然|纪实|真实|原片|淡/.test(preference)) return "natural"
-  if (/高反差|剪影|暗调|低调|黑/.test(preference)) return "dark"
-  return "custom"
-}
-
 function extractStyleDirectionItems(
   payload: Record<string, unknown>,
   result: AgentResultResponse,
   userPreference: string
 ): string[] {
-  const preference = userPreference.trim()
-  if (preference) {
-    const style = preferredStyle(preference)
-    if (style === "cinematic") return [`电影感低调风格：围绕「${preference}」压住环境亮度和杂色，让主体、高光或暖色区域成为视觉中心，整体更有情绪。`]
-    if (style === "ins") return [`INS 清透风格：围绕「${preference}」保持画面明亮干净、肤色或主体柔和，色彩轻盈但不过度饱和。`]
-    if (style === "warm") return [`暖色氛围风格：围绕「${preference}」保留橙红、金色或夕阳色彩，让照片更有时间感和情绪感。`]
-    if (style === "cool") return [`冷调通透风格：围绕「${preference}」控制暖色干扰，强化空气感、层次和清爽的画面关系。`]
-    if (style === "natural") return [`纪实自然风格：围绕「${preference}」只修正明显曝光和色偏问题，保留现场真实光线与颜色。`]
-    if (style === "dark") return [`高反差暗调风格：围绕「${preference}」保留黑场和主体轮廓，让画面更有图形感和张力。`]
-    return [`用户偏好「${preference}」：后期只围绕这个审美目标收敛，不再罗列其他风格；参数区间用于实现该方向。`]
-  }
-
-  const explicitDirections = toStringList(
-    payload.style_directions ??
-      payload.styleDirections ??
-      payload.editing_style ??
-      payload.editingStyle ??
-      payload.post_style ??
-      payload.postStyle
+  const directions = toStringList(
+    payload.style_directions ?? payload.styleDirections ?? payload.editing_style ??
+    payload.editingStyle ?? payload.post_style ?? payload.postStyle
   )
-
-  if (explicitDirections.length) return explicitDirections.slice(0, 4)
-
-  const combinedText = [
-    result.summary,
-    result.visibleText,
-    toStringList(payload.main_issues ?? payload.mainIssues).join(" "),
-  ]
-    .join(" ")
-    .toLowerCase()
-
-  const styleItems: string[] = []
-
-  if (/暖|橙|日出|夕阳|黄昏|金色|电影/.test(combinedText)) {
-    styleItems.push("电影感低调暖色：压暗环境，让暖色高光成为视觉中心，适合更情绪化、更有氛围的作品。")
-  }
-
-  if (/剪影|暗部|黑场|高反差|压暗|主体/.test(combinedText)) {
-    styleItems.push("极简高反差剪影：保留暗部黑场，强化主体轮廓和画面图形感，适合更克制的视觉表达。")
-  }
-
-  if (/天空|风光|水面|山|云|湖|海|高光/.test(combinedText)) {
-    styleItems.push("自然通透风光：优先保留天空与水面层次，轻微增强色彩和局部对比，适合更耐看的自然风格。")
-  }
-
-  styleItems.push("纪实自然风格：只轻微压高光、校正白平衡和恢复主体层次，保留现场真实氛围。")
-
-  return uniqueItems(styleItems).slice(0, 3)
+  if (directions.length) return directions.slice(0, 4)
+  // Never invent photo-specific advice from generic style keywords.
+  return [result.summary || userPreference].filter(Boolean)
 }
 
-function extractParameterItems(
-  adjustmentSource: unknown,
-  xmpSource: unknown,
-  userPreference = ""
-): string[] {
-  const preferenceItems = parameterItemsForPreference(userPreference)
-  if (preferenceItems.length) return preferenceItems
+function extractParameterItems(adjustmentSource: unknown, xmpSource: unknown): string[] {
   const xmpParams = formatParameterObject(xmpSource)
-  if (xmpParams.length) return xmpParams
-  return formatParameterObject(adjustmentSource)
-}
-
-function parameterItemsForPreference(userPreference: string): string[] {
-  const style = preferredStyle(userPreference)
-  if (!style) return []
-  if (style === "cinematic") {
-    return [
-      "曝光补偿：建议降低，参考区间 -0.4 EV ~ -0.1 EV。含义：压住整体亮度，让画面更有电影感。",
-      "高光：建议降低，参考区间 -45 ~ -20。含义：保留亮部细节，避免画面过曝发白。",
-      "阴影：建议保持或小幅提升，参考区间 0 ~ +18。含义：保留暗部氛围，不把黑场拉灰。",
-      "对比度：建议增加，参考区间 +8 ~ +22。含义：强化明暗层次和主体轮廓。",
-      "色温：按画面光线微调，参考区间 -200K ~ +400K。含义：让色彩偏向克制的电影氛围。",
-    ]
-  }
-  if (style === "ins") {
-    return [
-      "曝光补偿：建议小幅增加，参考区间 +0.1 EV ~ +0.4 EV。含义：让画面更明亮轻盈。",
-      "高光：建议降低，参考区间 -30 ~ -10。含义：保留天空、皮肤或亮部细节。",
-      "阴影：建议提升，参考区间 +15 ~ +35。含义：减少死黑，让画面更清透。",
-      "自然饱和度：建议小幅增加，参考区间 +8 ~ +18。含义：增强颜色但避免过艳。",
-      "清晰度：建议降低或保持，参考区间 -8 ~ +5。含义：保持柔和干净的 INS 观感。",
-    ]
-  }
-  if (style === "warm") {
-    return [
-      "色温：建议提高，参考区间 +300K ~ +900K。含义：强化暖色氛围。",
-      "高光：建议降低，参考区间 -40 ~ -15。含义：避免橙黄亮部溢出。",
-      "自然饱和度：建议增加，参考区间 +8 ~ +20。含义：增强暖色但保持自然。",
-      "阴影：建议小幅提升，参考区间 +5 ~ +20。含义：保留主体和前景层次。",
-    ]
-  }
-  if (style === "cool") {
-    return [
-      "色温：建议降低，参考区间 -900K ~ -300K。含义：建立冷调基底。",
-      "高光：建议降低，参考区间 -35 ~ -10。含义：保留天空和反光细节。",
-      "去朦胧：建议小幅增加，参考区间 +5 ~ +15。含义：增强空气透视和远景层次。",
-      "饱和度：建议保持或小幅降低，参考区间 -8 ~ +5。含义：避免冷调画面显脏。",
-    ]
-  }
-  if (style === "natural") {
-    return [
-      "曝光补偿：建议微调，参考区间 -0.2 EV ~ +0.2 EV。含义：只修正明显明暗偏差。",
-      "高光：建议降低，参考区间 -25 ~ -8。含义：保留亮部层次。",
-      "阴影：建议小幅提升，参考区间 +5 ~ +18。含义：恢复主体可读性。",
-      "自然饱和度：建议小幅调整，参考区间 0 ~ +10。含义：保持真实颜色。",
-    ]
-  }
-  if (style === "dark") {
-    return [
-      "曝光补偿：建议降低，参考区间 -0.6 EV ~ -0.2 EV。含义：保留暗调氛围。",
-      "黑色色阶：建议降低，参考区间 -25 ~ -8。含义：压实黑场和轮廓。",
-      "高光：建议降低，参考区间 -35 ~ -10。含义：保住关键亮部细节。",
-      "对比度：建议增加，参考区间 +12 ~ +28。含义：强化图形感和明暗张力。",
-    ]
-  }
-  return [
-    `曝光/色彩/对比度：围绕「${userPreference.trim()}」小步调整。含义：先保证主体清楚，再逐步靠近用户指定风格。`,
-  ]
+  return xmpParams.length ? xmpParams : formatParameterObject(adjustmentSource)
 }
 
 function mapPostResult(result?: AgentResultResponse, userPreference = ""): PostPanelResult {
@@ -489,16 +401,18 @@ function mapPostResult(result?: AgentResultResponse, userPreference = ""): PostP
   const adjustmentSource = payload.adjustments
   const xmpSource = payload.xmp_params ?? payload.xmpParams
   const styleDirections = extractStyleDirectionItems(payload, result, userPreference)
-  const parameterItems = extractParameterItems(adjustmentSource, xmpSource, userPreference)
+  const parameterItems = extractParameterItems(adjustmentSource, xmpSource)
 
-  if (mainIssues.length) suggestions.push({ category: "主要问题", items: mainIssues })
-  suggestions.push({
-    category: "后期风格方向",
-    items: styleDirections,
+  if (mainIssues.length) suggestions.push({ category: "主要问题", items: mainIssues.map(cleanSuggestion) })
+  if (styleDirections.length && styleDirections[0] !== summary) suggestions.push({
+    category: "处理方向",
+    items: styleDirections.map(cleanSuggestion),
   })
+  const actions = toStringList(adjustmentSource).map(cleanSuggestion)
+  if (actions.length) suggestions.push({ category: "调整建议", items: actions })
   if (parameterItems.length) {
     suggestions.push({
-      category: "参数区间建议",
+      category: "模型参考参数",
       items: parameterItems,
     })
   }
@@ -512,21 +426,22 @@ function mapPostResult(result?: AgentResultResponse, userPreference = ""): PostP
   return {
     summary,
     suggestions,
+    parameters: mapParameterRows(xmpSource),
+    originalText: result.visibleText || "",
+    sourceNote: String(payload.source_note || ""),
   }
 }
 
-function compactFeedbackItem(item: string, maxLength = 42): string {
-  const normalized = item
-    .replace(/[•·]/g, "")
-    .replace(/\s+/g, " ")
+function compactFeedbackItem(item: string): string {
+  // Keep the complete feedback. Readability must not discard model content.
+  return item
+    .replace(/^[•·\s]+/, "")
     .replace(/^[-\d.、\s]+/, "")
     .trim()
-  const firstSentence = normalized.split(/[。！？；\n]/).find(Boolean) || normalized
-  return firstSentence.length > maxLength ? `${firstSentence.slice(0, maxLength)}...` : firstSentence
 }
 
-function compactFeedbackList(items: string[], maxItems = 3): string[] {
-  return uniqueItems(items.map((item) => compactFeedbackItem(item))).slice(0, maxItems)
+function compactFeedbackList(items: string[]): string[] {
+  return uniqueItems(items.map((item) => compactFeedbackItem(item)))
 }
 
 function mapCoachResult(result?: AgentResultResponse): CoachPanelResult {
@@ -544,9 +459,10 @@ function mapCoachResult(result?: AgentResultResponse): CoachPanelResult {
 
   const strengths = compactFeedbackList(toStringList(resultPayload(result, "strengths")))
   const improvements = compactFeedbackList(toStringList(resultPayload(result, "improvements")))
-  const nextExercise = compactFeedbackList(toStringList(
-    resultPayload(result, "next_exercise") ?? resultPayload(result, "nextExercise")
-  ), 2)
+  const exerciseSource = resultPayload(result, "next_exercise") ?? resultPayload(result, "nextExercise")
+  const exercise = exerciseSource && typeof exerciseSource === "object" && !Array.isArray(exerciseSource)
+    ? exerciseSource as Record<string, unknown> : null
+  const nextExercise = exercise ? [] : compactFeedbackList(toStringList(exerciseSource))
 
   const sections = [
     strengths.length ? { title: "优点", items: strengths } : undefined,
@@ -557,13 +473,21 @@ function mapCoachResult(result?: AgentResultResponse): CoachPanelResult {
   if (!sections.length) {
     sections.push({
       title: "学习反馈",
-      items: compactFeedbackList(toStringList(result.visibleText || result.summary || "学习反馈已生成。"), 3),
+      items: compactFeedbackList(toStringList(result.visibleText || result.summary || "学习反馈已生成。")),
     })
   }
 
   return {
     sections,
-    practiceTask: nextExercise.length
+    originalText: result.visibleText || "",
+    practiceTask: exercise
+      ? {
+          title: typeof exercise.title === "string" ? exercise.title : "练习任务",
+          description: typeof exercise.scene === "string" ? exercise.scene : "",
+          requirements: toStringList(exercise.requirements),
+          acceptance: toStringList(exercise.acceptance),
+        }
+      : nextExercise.length
       ? {
           title: "练习任务",
           description: nextExercise.join("；"),
@@ -652,6 +576,8 @@ function buildAnalysisReport(input: {
     `**摘要**：${postResult.summary}`,
     "",
     postSections || "暂无后期建议。",
+    postResult.sourceNote ? `\n### 分析依据\n\n${postResult.sourceNote}` : "",
+    postResult.originalText ? `\n### Post Agent 完整原文\n\n${postResult.originalText}` : "",
     "",
     "## 学习反馈",
     "",
@@ -659,6 +585,11 @@ function buildAnalysisReport(input: {
     coachResult.practiceTask
       ? `\n### 练习任务\n\n- ${coachResult.practiceTask.title}：${coachResult.practiceTask.description}`
       : "",
+    coachResult.practiceTask?.requirements?.length
+      ? `\n### 练习要求\n\n${markdownList(coachResult.practiceTask.requirements)}` : "",
+    coachResult.practiceTask?.acceptance?.length
+      ? `\n### 验收标准\n\n${markdownList(coachResult.practiceTask.acceptance)}` : "",
+    coachResult.originalText ? `\n### Coach Agent 完整原文\n\n${coachResult.originalText}` : "",
     "",
     "## 最近事件",
     "",
@@ -738,6 +669,7 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
   const [results, setResults] = useState<AgentResultResponse[]>([])
   const [error, setError] = useState<string | null>(null)
   const [demoNotice, setDemoNotice] = useState<string | null>(null)
+  const activeJobRef = useRef<string | null>(initialJobId ?? null)
 
   const previewUrl = normalizePreviewUrl(media?.previewUrl)
   const isBusy = jobStatus === "uploading" || jobStatus === "creating"
@@ -807,6 +739,7 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
 
   const loadResults = useCallback(async (targetJobId: string) => {
     const response = await getJobResults(targetJobId)
+    if (activeJobRef.current !== targetJobId) return
     clearAgentTimeout()
     setJobStatus(response.status)
     setResults(response.results)
@@ -923,17 +856,33 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
   useEffect(() => {
     if (!initialJobId) return
     const targetJobId = initialJobId
+    activeJobRef.current = targetJobId
     let disposed = false
 
     async function restoreJob() {
       try {
         const restoredJob = await getJob(targetJobId)
         if (disposed) return
+        setJobId(targetJobId)
+        setMedia(null)
+        setResults([])
+        setPreference(restoredJob.userGoal || "")
         setJobStatus(restoredJob.status)
+        const restoreMedia = async () => {
+          const mediaId = restoredJob.mediaIds[0]
+          if (!mediaId) return
+          try {
+            const restoredMedia = await getMedia(mediaId)
+            if (!disposed) setMedia(restoredMedia)
+          } catch {
+            if (!disposed) setError("历史结果已保留，但原照片暂时无法恢复，请检查素材是否仍存在。")
+          }
+        }
         if (restoredJob.status === "completed" || restoredJob.status === "partial_completed" || restoredJob.status === "failed") {
-          await loadResults(targetJobId)
+          await Promise.all([loadResults(targetJobId), restoreMedia()])
         } else {
           subscribeToJob(targetJobId)
+          await restoreMedia()
         }
       } catch (restoreError) {
         if (!disposed) {
@@ -962,6 +911,7 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
       setError(null)
       setDemoNotice(null)
       setJobId(null)
+      activeJobRef.current = null
       setResults([])
       setEvents([])
       setAgentProgress(initialAgentState)
@@ -1001,6 +951,7 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
       })
 
       setJobId(createdJob.jobId)
+      activeJobRef.current = createdJob.jobId
       setJobStatus(createdJob.status)
       window.history.replaceState(null, "", `/analysis/${createdJob.jobId}`)
       subscribeToJob(createdJob.jobId)
@@ -1093,6 +1044,7 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
   }
 
   const handleResetUpload = () => {
+    activeJobRef.current = null
     unsubscribeRef.current?.()
     clearAgentTimeout()
     setMedia(null)
@@ -1268,19 +1220,21 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
         />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch lg:h-[calc(100vh-190px)] lg:min-h-[680px]">
-          <div className="lg:col-span-3 min-h-0">
-            <UploadPreviewPanel
-              images={previewUrl ? [previewUrl] : []}
-              fileName={media?.fileName}
-              exif={toExif(media)}
-              preference={preference}
-              onPreferenceChange={setPreference}
-              onRetake={handleResetUpload}
-              onCancel={handleResetUpload}
-            />
+          <div className="lg:col-span-3 min-h-0 flex flex-col gap-4">
+            <div className="flex-1 min-h-0">
+              <UploadPreviewPanel
+                images={previewUrl ? [previewUrl] : []}
+                fileName={media?.fileName}
+                exif={toExif(media)}
+                preference={preference}
+                onPreferenceChange={setPreference}
+                onRetake={handleResetUpload}
+                onCancel={handleResetUpload}
+              />
+            </div>
             {media && !jobId && (
               <Button
-                className="mt-4 h-11 w-full bg-blue-600 text-white hover:bg-blue-700"
+                className="h-11 w-full shrink-0 bg-blue-600 text-white hover:bg-blue-700"
                 disabled={isBusy}
                 onClick={handleStartAnalysis}
               >
@@ -1312,6 +1266,8 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
 
           <div className="lg:col-span-5 flex min-h-0">
             <AnalysisResultPanel
+              jobId={jobId}
+              mediaId={media?.mediaId}
               postResult={postPanelResult}
               coachResult={coachPanelResult}
               onExport={handleExportReport}

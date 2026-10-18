@@ -62,6 +62,22 @@ def test_upload_media_rejects_unsupported_file_type(tmp_path) -> None:
     assert response.status_code == 415
 
 
+def test_history_media_lookup_returns_matching_upload_and_missing_is_404(tmp_path) -> None:
+    app.dependency_overrides[get_media_store] = lambda: MediaStore(root=tmp_path / "media")
+    client = TestClient(app)
+    try:
+        uploaded = client.post("/api/media/upload", files={
+            "file": ("history-cat.jpg", build_image_bytes(size=(800, 600)), "image/jpeg"),
+        }).json()
+        restored = client.get(f"/api/media/{uploaded['mediaId']}")
+        assert restored.status_code == 200
+        assert restored.json() == uploaded
+        assert client.get("/api/media/media_missing").status_code == 404
+        assert client.get("/api/media/not-a-media-id").status_code == 422
+    finally:
+        app.dependency_overrides.clear()
+
+
 def test_upload_media_rejects_file_over_size_limit(tmp_path) -> None:
     app.dependency_overrides[get_media_store] = lambda: MediaStore(
         root=tmp_path / "media",

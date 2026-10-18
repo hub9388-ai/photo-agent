@@ -26,7 +26,7 @@ from PIL import Image
 
 from photo_events import EventSink, ensure_event_sink
 from photo_protocol import RESPONSE_DELIMITER, split_response_sections
-from photo_runtime import create_anthropic_client
+from photo_runtime import create_anthropic_client, resolve_model_name
 from photo_storage import (
     atomic_write_json,
     build_profile_document,
@@ -45,7 +45,7 @@ except ImportError:
 # 常量配置
 # ──────────────────────────────────────────────
 
-MODEL = "claude-sonnet-4-6"
+MODEL = resolve_model_name()
 MAX_TOKENS_STREAM = 1024          # 照片诊断输出上限（不开 thinking，300-500 字诊断足够）
 MAX_TOKENS_CHAT = 8192            # 纯文字对话输出上限（拍摄规划 JSON 需要较多 tokens）
 MAX_TOKENS_CHAT_THINKING = min(MAX_TOKENS_CHAT, 4096)  # 开 thinking 时收紧上限，降低预算校验失败风险
