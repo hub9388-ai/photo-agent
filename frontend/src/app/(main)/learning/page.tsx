@@ -43,8 +43,9 @@ import type {
   PracticeRecoveryRecord,
   PracticeTask,
 } from "@/types/learning"
+import { DEMO_MODE } from "@/lib/demo/config"
 
-const ENABLE_DEMO_FALLBACK = process.env.NEXT_PUBLIC_ENABLE_DEMO_FALLBACK !== "false"
+const ENABLE_DEMO_FALLBACK = !DEMO_MODE && process.env.NEXT_PUBLIC_ENABLE_DEMO_FALLBACK !== "false"
 const COACH_TIMEOUT_MS = 1000 * 90
 
 function buildLearningIssue(
@@ -162,6 +163,7 @@ export default function LearningPage() {
   const [issue, setIssue] = useState<LearningIssue | null>(null)
   const [recovery, setRecovery] = useState<PracticeRecoveryRecord | null>(() => loadPracticeRecovery())
   const [forceDemo, setForceDemo] = useState(false)
+  const [claimedTasks, setClaimedTasks] = useState<string[]>([])
 
   const clearAttemptRuntime = useCallback((attemptId: string) => {
     subscriptionsRef.current[attemptId]?.()
@@ -288,6 +290,7 @@ export default function LearningPage() {
 
   useEffect(() => {
     const loadTimer = window.setTimeout(() => {
+      if (DEMO_MODE) { try { setClaimedTasks(JSON.parse(localStorage.getItem("photoai.demo.claimedTasks.v2") ?? "[]")) } catch { /* Keep the task list usable. */ } }
       void loadLearningData()
     }, 0)
     const activeSubscriptions = subscriptionsRef.current
@@ -300,16 +303,17 @@ export default function LearningPage() {
   const hasRealTasks = coachHistory.length > 0
   const shouldUseDemo = forceDemo || (ENABLE_DEMO_FALLBACK && !hasRealTasks)
   const photoEvaluations = useMemo(
-    () => (hasRealTasks ? coachHistory.map(mapCoachToPhotoEvaluation).slice(0, 4) : demoPhotoEvaluations),
+    () => (hasRealTasks ? coachHistory.map(mapCoachToPhotoEvaluation).slice(0, 4) : DEMO_MODE ? [] : demoPhotoEvaluations),
     [coachHistory, hasRealTasks]
   )
 
   const practiceTasks = useMemo(() => {
+    if (DEMO_MODE && !coachHistory.length) return []
     const sourceTasks = shouldUseDemo ? demoPracticeTasks : buildPracticeTasks(coachHistory)
     return sourceTasks.map((task) => {
       const attempts = practiceAttempts[task.id] || practiceAttempts[task.practice_task_id] || task.attempts || []
       const latestAttempt = attempts[0]
-      if (!latestAttempt) return { ...task, attempts }
+      if (!latestAttempt) return { ...task, attempts, ...(DEMO_MODE ? { status: claimedTasks.includes(task.id) ? "in_progress" as const : "not_started" as const, statusLabel: claimedTasks.includes(task.id) ? "已领取" : "未领取" } : {}) }
       const status =
         latestAttempt.status === "completed"
           ? "completed"
@@ -325,7 +329,7 @@ export default function LearningPage() {
         status === "completed" ? "已完成" : status === "in_progress" ? "练习中" : status === "failed" ? "归档失败" : "需复练"
       return { ...task, attempts, status, statusLabel } satisfies PracticeTask
     })
-  }, [coachHistory, practiceAttempts, shouldUseDemo])
+  }, [coachHistory, practiceAttempts, shouldUseDemo, claimedTasks])
 
   const skillScores = useMemo(() => (hasRealTasks ? buildSkillScores(coachHistory) : demoSkillScores), [coachHistory, hasRealTasks])
   const weeklyScores = useMemo(() => (hasRealTasks ? buildWeeklyScores(coachHistory) : demoWeeklyScores), [coachHistory, hasRealTasks])
@@ -613,7 +617,7 @@ export default function LearningPage() {
 
       {uploadingTaskId ? <PracticeReviewProgress message="练习照片正在提交，请保持页面打开。" /> : null}
 
-      {showEmptyState ? <LearningEmptyState onShowDemo={() => setForceDemo(true)} /> : null}
+      {showEmptyState ? <LearningEmptyState onShowDemo={DEMO_MODE ? undefined : () => setForceDemo(true)} /> : null}
 
       {shouldUseDemo ? (
         <DemoFallbackBanner message={demoLearningBanner} actionLabel="重新读取真实数据" onAction={loadLearningData} />
@@ -632,6 +636,13 @@ export default function LearningPage() {
             tasks={practiceTasks}
             uploadingTaskId={uploadingTaskId}
             onRequestUpload={(task) => {
+              if (DEMO_MODE) {
+                const next = Array.from(new Set([...claimedTasks, task.id]))
+                setClaimedTasks(next)
+                localStorage.setItem("photoai.demo.claimedTasks.v2", JSON.stringify(next))
+                setNotice(`已领取「${task.title}」。这里只记录练习计划，不代表完成拍摄或 AI 复评。`)
+                return
+              }
               setSelectedTask(task)
               setDialogError(null)
             }}

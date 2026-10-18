@@ -1,6 +1,7 @@
 import type { PracticeRecoveryRecord } from "@/types/learning"
+import { DEMO_MODE } from "@/lib/demo/config"
 
-const RECOVERY_KEY = "photoai.learning.practiceRecovery.v1"
+const RECOVERY_KEY = DEMO_MODE ? "photoai.demo.practiceRecovery.v2" : "photoai.learning.practiceRecovery.v1"
 const MAX_RECOVERY_AGE_MS = 1000 * 60 * 60 * 24
 
 export function loadPracticeRecovery(): PracticeRecoveryRecord | null {

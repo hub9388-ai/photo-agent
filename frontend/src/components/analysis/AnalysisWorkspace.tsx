@@ -38,6 +38,9 @@ import { AgentProgressCard, type AgentProgress } from "./AgentProgressCard"
 import { AnalysisResultPanel, type PostParameter } from "./AnalysisResultPanel"
 import { LiveEventStream, type SSEEvent } from "./LiveEventStream"
 import { UploadPlaceholder, UploadPreviewPanel } from "./UploadPreviewPanel"
+import { DEMO_MODE } from "@/lib/demo/config"
+import { demoCatMedia } from "@/lib/demo/fixtures"
+import { catCase } from "@/lib/demo/case"
 
 type ReviewAgent = Extract<AgentType, "post" | "coach">
 
@@ -77,10 +80,10 @@ const agentNames: Record<ReviewAgent, string> = {
 }
 
 const AGENT_TIMEOUT_MS = 90_000
-const SAVED_ANALYSIS_CACHE_KEY = "photoai.savedAnalysis.v1"
-const PLANNING_DRAFT_CACHE_KEY = "photoai.planningDraft.v1"
-const PLANNING_PRESET_DRAFT_KEY = "photoai.planningPresetDraft.v1"
-const ASSET_LIBRARY_CACHE_KEY = "photoai.assetLibrary.v1"
+const SAVED_ANALYSIS_CACHE_KEY = DEMO_MODE ? "photoai.demo.savedAnalysis.v2" : "photoai.savedAnalysis.v1"
+const PLANNING_DRAFT_CACHE_KEY = DEMO_MODE ? "photoai.demo.planningDraft.v2" : "photoai.planningDraft.v1"
+const PLANNING_PRESET_DRAFT_KEY = DEMO_MODE ? "photoai.demo.planningPresetDraft.v2" : "photoai.planningPresetDraft.v1"
+const ASSET_LIBRARY_CACHE_KEY = DEMO_MODE ? "photoai.demo.assetLibrary.v2" : "photoai.assetLibrary.v1"
 
 const demoPhotoSvg = encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900">
@@ -205,6 +208,7 @@ function formatTime(value: string): string {
 
 function normalizePreviewUrl(url?: string): string | undefined {
   if (!url) return undefined
+  if (DEMO_MODE || url.startsWith("data:")) return url
   if (url.startsWith("blob:") || url.startsWith("http://") || url.startsWith("https://")) {
     return url
   }
@@ -656,12 +660,12 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
   const unsubscribeRef = useRef<(() => void) | null>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const [media, setMedia] = useState<UploadMediaResponse | null>(null)
+  const [media, setMedia] = useState<UploadMediaResponse | null>(DEMO_MODE ? demoCatMedia : null)
   const [jobId, setJobId] = useState<string | null>(initialJobId ?? null)
   const [jobStatus, setJobStatus] = useState<JobStatus | "idle" | "uploading" | "creating">(
     initialJobId ? "running" : "idle"
   )
-  const [preference, setPreference] = useState("")
+  const [preference, setPreference] = useState(DEMO_MODE ? catCase.preference : "")
   const [events, setEvents] = useState<SSEEvent[]>([])
   const [agentProgress, setAgentProgress] = useState<Record<ReviewAgent, AgentProgress>>(
     initialAgentState
@@ -669,6 +673,7 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
   const [results, setResults] = useState<AgentResultResponse[]>([])
   const [error, setError] = useState<string | null>(null)
   const [demoNotice, setDemoNotice] = useState<string | null>(null)
+  const [consoleCollapsed, setConsoleCollapsed] = useState(false)
   const activeJobRef = useRef<string | null>(initialJobId ?? null)
 
   const previewUrl = normalizePreviewUrl(media?.previewUrl)
@@ -927,6 +932,10 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
   }
 
   const handleStartAnalysis = async () => {
+    if (DEMO_MODE && preference.trim() && preference !== catCase.preference && preference !== "纪实摄影：保留自然体态和街头环境") {
+      setError("在线演示仅提供自然可爱与纪实两种预置偏好，请通过上方“示例分析偏好”选择。任意偏好需运行完整服务。")
+      return
+    }
     if (!media) {
       setError("请先上传照片")
       return
@@ -965,7 +974,7 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
   const applyDemoResults = (response: JobResultsResponse, notice: string) => {
     clearAgentTimeout()
     unsubscribeRef.current?.()
-    setMedia((current) => current ?? demoMedia)
+    setMedia((current) => current ?? (DEMO_MODE ? demoCatMedia : demoMedia))
     setJobId(response.jobId)
     setJobStatus(response.status)
     setResults(response.results)
@@ -996,15 +1005,15 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
   const handleUseDemoPhoto = () => {
     clearAgentTimeout()
     unsubscribeRef.current?.()
-    setMedia(demoMedia)
+    setMedia(DEMO_MODE ? demoCatMedia : demoMedia)
     setJobId(null)
     setJobStatus("idle")
     setResults([])
     setEvents([])
     setError(null)
-    setPreference("偏好风光片的色彩增强，保留天空高光层次")
+    setPreference(DEMO_MODE ? catCase.preference : "偏好风光片的色彩增强，保留天空高光层次")
     setAgentProgress(initialAgentState)
-    setDemoNotice("已载入示例照片。你可以继续创建真实任务，也可以直接使用示例结果。")
+    setDemoNotice(DEMO_MODE ? "已选好三花猫原图，请设置偏好并点击“开始智能分析”。本演示使用预置结果。" : "已载入示例照片。你可以继续创建真实任务，也可以直接使用示例结果。")
     router.replace("/analysis")
   }
 
@@ -1047,7 +1056,7 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
     activeJobRef.current = null
     unsubscribeRef.current?.()
     clearAgentTimeout()
-    setMedia(null)
+    setMedia(DEMO_MODE ? demoCatMedia : null)
     setJobId(null)
     setResults([])
     setEvents([])
@@ -1120,7 +1129,7 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
       // 后端 ResultStore 仍是主存储，本地收藏失败不影响真实结果。
     }
     setError(null)
-    setDemoNotice("结果已保存：后端 Job/Result 可在历史页恢复，本地也已记录最近保存项。")
+    setDemoNotice(DEMO_MODE ? "演示结果已保存在此浏览器，可在历史页恢复。" : "结果已保存：后端 Job/Result 可在历史页恢复，本地也已记录最近保存项。")
   }
 
   const handleCreatePlanningDraft = () => {
@@ -1190,12 +1199,13 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
         <Button variant="outline" size="sm" onClick={handleUseDemoPhoto}>
           使用示例照片
         </Button>
-        <Button variant="outline" size="sm" onClick={handleUseDemoResults}>
+        {!DEMO_MODE && <><Button variant="outline" size="sm" onClick={handleUseDemoResults}>
           使用示例结果
         </Button>
         <Button variant="outline" size="sm" onClick={handleUsePartialDemoResults}>
           partial_completed 示例
-        </Button>
+        </Button></>}
+        {DEMO_MODE && <select aria-label="示例分析偏好" className="rounded border bg-white p-2 text-sm" value={preference.includes("纪实") ? "纪实" : "自然可爱"} onChange={event => setPreference(event.target.value === "纪实" ? "纪实摄影：保留自然体态和街头环境" : catCase.preference)}><option>自然可爱</option><option>纪实</option></select>}
         {jobId && !isTerminalStatus(jobStatus) && (
           <Button variant="outline" size="sm" onClick={handleReconnectSSE}>
             重新连接 SSE
@@ -1250,11 +1260,11 @@ export function AnalysisWorkspace({ initialJobId }: AnalysisWorkspaceProps) {
                   实时分析控制台
                   <AlertCircle className="w-4 h-4 text-slate-400" />
                 </CardTitle>
-                <Button variant="ghost" size="sm" className="text-slate-500">
-                  收起
+                <Button variant="ghost" size="sm" className="text-slate-500" aria-expanded={!consoleCollapsed} onClick={() => setConsoleCollapsed(value => !value)}>
+                  {consoleCollapsed ? "展开" : "收起"}
                 </Button>
               </CardHeader>
-              <CardContent className="space-y-4 flex-1 flex flex-col min-h-0 overflow-hidden">
+              <CardContent className={`space-y-4 flex-1 flex-col min-h-0 overflow-hidden ${consoleCollapsed ? "hidden" : "flex"}`}>
                 <AgentProgressCard agent={agentProgress.post} variant="post" />
                 <AgentProgressCard agent={agentProgress.coach} variant="coach" />
                 <div className="flex-1 min-h-0">

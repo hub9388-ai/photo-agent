@@ -40,7 +40,7 @@ export function PlanResultCard({
   adoptedPlanId,
 }: PlanResultCardProps) {
   const [activeTab, setActiveTab] = useState(plans[0]?.id)
-  const activePlan = plans.find((p) => p.id === activeTab)
+  const activePlan = plans.find((p) => p.id === activeTab) ?? plans.find(p => p.id === adoptedPlanId) ?? plans[0]
 
   return (
     <div className="flex min-h-0 flex-[1.4] flex-col overflow-hidden rounded-[10px] border border-[#E2E8F0] bg-white p-5"
@@ -57,7 +57,7 @@ export function PlanResultCard({
       <div className="mt-4 flex shrink-0 gap-3"
       >
         {plans.map((plan) => {
-          const isActive = plan.id === activeTab
+          const isActive = plan.id === activePlan?.id
           return (
             <button
               key={plan.id}

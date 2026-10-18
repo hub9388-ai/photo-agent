@@ -6,6 +6,8 @@
 import type { AgentEventMessage, SSEEvent } from "@/types/api"
 import { buildApiUrl, isMockMode, delay } from "./client"
 import { mockAgentEvents, mockSSEEvents } from "@/mocks"
+import { DEMO_MODE } from "@/lib/demo/config"
+import { subscribeDemoJob } from "@/lib/demo/api"
 
 // SSE 连接配置
 const SSE_URL = process.env.NEXT_PUBLIC_SSE_URL || "/api/jobs"
@@ -29,6 +31,10 @@ export function subscribeJobEvents(
   jobId: string,
   handlers: JobEventHandlers = {}
 ): () => void {
+  if (DEMO_MODE) {
+    handlers.onOpen?.()
+    return subscribeDemoJob(jobId, event => { handlers.onEvent?.(event); if (event.type === "job.completed") handlers.onClose?.() })
+  }
   if (isMockMode()) {
     let eventIndex = 0
     let closed = false

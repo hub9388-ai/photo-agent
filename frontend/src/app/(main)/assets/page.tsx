@@ -14,13 +14,15 @@ import { failedFileToAssetItem, mediaToAssetItem } from "@/lib/assets"
 import { isMockMode, scoreAssetsWithAssetAgent, sendAssetsToCoach, sendAssetsToPost, uploadManyMedia } from "@/lib/api"
 import { demoAssetItems } from "@/lib/mocks"
 import type { AssetFilter, AssetGrade, AssetItem, UploadError } from "@/types/assets"
+import { DEMO_MODE } from "@/lib/demo/config"
+import { seedDemoAssets } from "@/lib/demo/api"
 
 const ENABLE_DEMO_FALLBACK = process.env.NEXT_PUBLIC_ENABLE_DEMO_FALLBACK !== "false"
-const ASSET_LIBRARY_CACHE_KEY = "photoai.assetLibrary.v1"
-const ASSET_PROJECT_TITLE_CACHE_KEY = "photoai.assetProjectTitle.v1"
-const ASSET_FOLDER_NAMES_CACHE_KEY = "photoai.assetFolderNames.v1"
-const ASSET_CUSTOM_FOLDERS_CACHE_KEY = "photoai.assetCustomFolders.v1"
-const ASSET_FOLDER_ASSIGNMENTS_CACHE_KEY = "photoai.assetFolderAssignments.v1"
+const ASSET_LIBRARY_CACHE_KEY = DEMO_MODE ? "photoai.demo.assetLibrary.v2" : "photoai.assetLibrary.v1"
+const ASSET_PROJECT_TITLE_CACHE_KEY = DEMO_MODE ? "photoai.demo.assetProjectTitle.v2" : "photoai.assetProjectTitle.v1"
+const ASSET_FOLDER_NAMES_CACHE_KEY = DEMO_MODE ? "photoai.demo.assetFolderNames.v2" : "photoai.assetFolderNames.v1"
+const ASSET_CUSTOM_FOLDERS_CACHE_KEY = DEMO_MODE ? "photoai.demo.assetCustomFolders.v2" : "photoai.assetCustomFolders.v1"
+const ASSET_FOLDER_ASSIGNMENTS_CACHE_KEY = DEMO_MODE ? "photoai.demo.assetFolderAssignments.v2" : "photoai.assetFolderAssignments.v1"
 
 type CustomAssetFolder = {
   id: string
@@ -364,7 +366,7 @@ function loadCachedFolderAssignments() {
 function saveCachedAssets(assets: AssetItem[]) {
   if (typeof window === "undefined") return
   try {
-    const stableAssets = assets.filter((asset) => !asset.is_demo && asset.upload_status !== "uploading")
+    const stableAssets = assets.filter((asset) => (DEMO_MODE || !asset.is_demo) && asset.upload_status !== "uploading")
     window.localStorage.setItem(ASSET_LIBRARY_CACHE_KEY, JSON.stringify(stableAssets))
   } catch {
     // Local cache is best-effort only. The UI should keep working even if storage is full.
@@ -601,6 +603,7 @@ export default function AssetsPage() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
+      if (DEMO_MODE) seedDemoAssets()
       const cachedAssets = loadCachedAssets()
       setAssets(cachedAssets)
       setActiveAssetId(cachedAssets[0]?.asset_id || null)

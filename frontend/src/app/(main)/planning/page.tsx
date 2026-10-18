@@ -8,11 +8,13 @@ import type { PlanningFormData, PlanResult } from "@/components/planning"
 import { createJob, getJob, getJobResults, subscribeJobEvents } from "@/lib/api"
 import { mockPlanningPagePlans } from "@/lib/mocks"
 import type { AgentEventMessage, AgentResultResponse, JobStatus } from "@/types/api"
+import { DEMO_MODE } from "@/lib/demo/config"
+import { demoPlans, demoPlanningInput } from "@/lib/demo/fixtures"
 
 type PlanningNoticeKind = "info" | "success" | "warning" | "error"
-const PLANNING_DRAFT_CACHE_KEY = "photoai.planningDraft.v1"
-const PLANNING_ADOPTED_PLAN_KEY = "photoai.adoptedPlanningPlan.v1"
-const PLANNING_PRESET_DRAFT_KEY = "photoai.planningPresetDraft.v1"
+const PLANNING_DRAFT_CACHE_KEY = DEMO_MODE ? "photoai.demo.planningDraft.v2" : "photoai.planningDraft.v1"
+const PLANNING_ADOPTED_PLAN_KEY = DEMO_MODE ? "photoai.demo.adoptedPlanningPlan.v2" : "photoai.adoptedPlanningPlan.v1"
+const PLANNING_PRESET_DRAFT_KEY = DEMO_MODE ? "photoai.demo.planningPresetDraft.v2" : "photoai.planningPresetDraft.v1"
 
 type ParsedPlanningConstraints = {
   start_time: string | null
@@ -1440,11 +1442,11 @@ function PlanningPageContent() {
 
   const [jobId, setJobId] = useState<string | null>(searchParams.get("job_id"))
   const [status, setStatus] = useState<JobStatus | "idle" | "creating">("idle")
-  const [plans, setPlans] = useState<PlanResult[]>(mockPlanningPagePlans)
+  const [plans, setPlans] = useState<PlanResult[]>(DEMO_MODE ? [] : mockPlanningPagePlans)
   const [notice, setNotice] = useState<{ kind: PlanningNoticeKind; message: string } | null>(null)
   const [events, setEvents] = useState<string[]>([])
   const [lastFormData, setLastFormData] = useState<PlanningFormData | null>(null)
-  const [initialFormData, setInitialFormData] = useState<Partial<PlanningFormData>>({
+  const [initialFormData, setInitialFormData] = useState<Partial<PlanningFormData>>(DEMO_MODE ? demoPlanningInput : {
     city: "大理",
     subject: "风光人像",
   })
@@ -1472,7 +1474,7 @@ function PlanningPageContent() {
       return
     }
     if (planResult.status === "failed") {
-      setPlans(mockPlanningPagePlans)
+      setPlans(DEMO_MODE ? [] : mockPlanningPagePlans)
       setGeneratedPreset("")
       setAdoptedPlanId(null)
       setNotice({
@@ -1481,15 +1483,18 @@ function PlanningPageContent() {
       })
       return
     }
-    setPlans(mapPlanResult(planResult, formDataRef.current ?? inferPlanningDataFromResult(planResult)))
+    setPlans(DEMO_MODE ? demoPlans() : mapPlanResult(planResult, formDataRef.current ?? inferPlanningDataFromResult(planResult)))
     setGeneratedPreset("")
     setAdoptedPlanId(null)
+    if (DEMO_MODE) {
+      try { const adopted = JSON.parse(localStorage.getItem(PLANNING_ADOPTED_PLAN_KEY) ?? "null"); if (adopted?.source_job_id === targetJobId) setAdoptedPlanId(adopted.plan_id) } catch { /* Ignore malformed optional adoption state. */ }
+    }
     const providerNote = textValue(planResult.structuredPayload.provider_note ?? planResult.structuredPayload.providerNote)
     const fallbackHint =
       /未配置|不可用|降级|超出|实时/.test(providerNote + planResult.visibleText)
         ? "实时天气/地点数据可能不可用，已基于通用拍摄经验生成参考方案。"
         : "PlanAgent 已生成拍摄方案。"
-    setNotice({ kind: providerNote ? "warning" : "success", message: fallbackHint })
+    setNotice({ kind: providerNote ? "warning" : "success", message: DEMO_MODE ? "已载入预置西湖摄影方案，可切换、采用或导出。表单保留你的输入，但不会实时生成路线或查询天气。" : fallbackHint })
   }, [clearPlanTimeout])
 
   const subscribeToPlanJob = useCallback((targetJobId: string) => {
@@ -1581,6 +1586,7 @@ function PlanningPageContent() {
       formDataRef.current = requestData
       setLastFormData(requestData)
       setNotice({ kind: "info", message: "正在创建 trip_planning job..." })
+      if (DEMO_MODE) localStorage.removeItem(PLANNING_ADOPTED_PLAN_KEY)
       setStatus("creating")
       setEvents([])
       setGeneratedPreset("")
@@ -1659,7 +1665,7 @@ function PlanningPageContent() {
       subscribeToPlanJob(createdJob.jobId)
     } catch (error) {
       setStatus("idle")
-      setPlans(mockPlanningPagePlans)
+      setPlans(DEMO_MODE ? [] : mockPlanningPagePlans)
       setGeneratedPreset("")
       setAdoptedPlanId(null)
       setNotice({
@@ -1690,7 +1696,7 @@ function PlanningPageContent() {
   const handleUseDemo = () => {
     unsubscribeRef.current?.()
     clearPlanTimeout()
-    setPlans(mockPlanningPagePlans)
+    setPlans(DEMO_MODE ? demoPlans() : mockPlanningPagePlans)
     setGeneratedPreset("")
     setAdoptedPlanId(null)
     setStatus("completed")

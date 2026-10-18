@@ -55,8 +55,8 @@ export function mapCoachToPhotoEvaluation(item: CoachHistoryItem, index: number)
 
   return {
     id: `eval_${job.jobId}`,
-    file: job.mediaIds[0] ? `${job.mediaIds[0]}.jpg` : `Coach 反馈 ${index + 1}`,
-    thumbnailUrl: "",
+    file: typeof result.structuredPayload.source_filename === "string" ? result.structuredPayload.source_filename : job.mediaIds[0] ? `${job.mediaIds[0]}.jpg` : `Coach 反馈 ${index + 1}`,
+    thumbnailUrl: typeof result.structuredPayload.preview_url === "string" ? result.structuredPayload.preview_url : "",
     sourceJobId: job.jobId,
     source: "CoachAgent 历史结果",
     status: improvements.length > 0 ? "pending_review" : "mastered",

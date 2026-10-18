@@ -1,6 +1,7 @@
 "use client"
 
-import { Pause } from "lucide-react"
+import { Pause, Play } from "lucide-react"
+import { useState } from "react"
 
 export interface SSEEvent {
   time: string
@@ -34,6 +35,8 @@ export function LiveEventStream({
   events,
   onClear,
 }: LiveEventStreamProps) {
+  const [frozen, setFrozen] = useState<SSEEvent[] | null>(null)
+  const displayed = frozen ?? events
   return (
     <div className="rounded-xl border border-slate-200 bg-white overflow-hidden h-full flex flex-col">
       {/* Header */}
@@ -46,21 +49,21 @@ export function LiveEventStream({
           >
             清空
           </button>
-          <button className="w-7 h-7 rounded-md border border-slate-300 bg-white flex items-center justify-center hover:bg-slate-50">
-            <Pause className="w-3.5 h-3.5 text-slate-500" />
+          <button aria-label={frozen ? "继续显示消息" : "暂停显示消息"} aria-pressed={frozen !== null} onClick={() => setFrozen(current => current ? null : events)} className="w-7 h-7 rounded-md border border-slate-300 bg-white flex items-center justify-center hover:bg-slate-50">
+            {frozen ? <Play className="w-3.5 h-3.5 text-slate-500" /> : <Pause className="w-3.5 h-3.5 text-slate-500" />}
           </button>
         </div>
       </div>
 
       {/* Event List */}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        {events.length === 0 ? (
+        {displayed.length === 0 ? (
           <div className="flex h-full min-h-[180px] items-center justify-center">
             <p className="text-slate-400 text-center">暂无实时消息</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
-            {events.map((event, index) => (
+            {displayed.map((event, index) => (
               <div
                 key={index}
                 className={`px-3 py-2.5 flex items-start gap-3 text-sm ${

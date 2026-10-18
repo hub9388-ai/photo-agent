@@ -5,12 +5,15 @@ import { resolve, extname, sep } from "node:path"
 import { fileURLToPath } from "node:url"
 
 const root = fileURLToPath(new URL("../out-demo/", import.meta.url))
+const policy = (await readFile(new URL("../../netlify.toml", import.meta.url), "utf8")).match(/Content-Security-Policy = "([^"]+)"/)?.[1]
 const mime = { ".html": "text/html; charset=utf-8", ".js": "application/javascript", ".css": "text/css", ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".woff2": "font/woff2", ".txt": "text/plain; charset=utf-8" }
 const server = createServer(async (request, response) => {
+  if (policy) response.setHeader("Content-Security-Policy", policy)
   try {
     const pathname = decodeURIComponent(new URL(request.url, "http://localhost").pathname)
     let target = resolve(root, "." + pathname)
     if (target !== resolve(root) && !target.startsWith(resolve(root) + sep)) throw new Error("Forbidden")
+    if (pathname.startsWith("/demo-editor/") && !extname(pathname)) target = resolve(root, "demo-editor/index.html")
     if ((await stat(target)).isDirectory()) target = resolve(target, "index.html")
     const body = await readFile(target)
     response.writeHead(200, { "Content-Type": mime[extname(target)] ?? "application/octet-stream" })

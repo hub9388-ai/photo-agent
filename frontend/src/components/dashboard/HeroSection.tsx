@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Upload, List, Cloud, Radio, Database } from "lucide-react"
 import Link from "next/link"
 import { mockSystemStatus } from "@/lib/mocks"
+import { DEMO_MODE } from "@/lib/demo/config"
 
 const statusConfig: Record<string, { color: string; text: string }> = {
   healthy: { color: "bg-green-500", text: "正常" },
@@ -55,7 +56,7 @@ export function HeroSection() {
             <CardTitle className="text-base">系统状态</CardTitle>
             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1" />
-              运行中
+              {DEMO_MODE ? "演示就绪" : "运行中"}
             </Badge>
           </div>
         </CardHeader>
@@ -65,7 +66,7 @@ export function HeroSection() {
             <span className="text-sm text-slate-600 flex-1">API 服务</span>
             <div className="flex items-center gap-1.5">
               <span className={`w-1.5 h-1.5 rounded-full ${apiStatus.color}`} />
-              <Badge variant="outline" className="text-xs bg-green-50 text-green-700">{apiStatus.text}</Badge>
+              <Badge variant="outline" className="text-xs bg-green-50 text-green-700">{DEMO_MODE ? "预置数据" : apiStatus.text}</Badge>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -73,7 +74,7 @@ export function HeroSection() {
             <span className="text-sm text-slate-600 flex-1">EventBus / SSE</span>
             <div className="flex items-center gap-1.5">
               <span className={`w-1.5 h-1.5 rounded-full ${sseStatus.color}`} />
-              <Badge variant="outline" className="text-xs bg-green-50 text-green-700">{sseStatus.text}</Badge>
+              <Badge variant="outline" className="text-xs bg-green-50 text-green-700">{DEMO_MODE ? "案例回放" : sseStatus.text}</Badge>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -81,7 +82,7 @@ export function HeroSection() {
             <span className="text-sm text-slate-600 flex-1">存储服务</span>
             <div className="flex items-center gap-1.5">
               <span className={`w-1.5 h-1.5 rounded-full ${storageStatus.color}`} />
-              <Badge variant="outline" className="text-xs bg-green-50 text-green-700">{storageStatus.text}</Badge>
+              <Badge variant="outline" className="text-xs bg-green-50 text-green-700">{DEMO_MODE ? "浏览器本地" : storageStatus.text}</Badge>
             </div>
           </div>
         </CardContent>

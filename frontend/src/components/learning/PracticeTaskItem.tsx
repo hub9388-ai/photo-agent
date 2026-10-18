@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Check, ChevronRight, Circle, Clock3, Frame, Mountain, Upload } from "lucide-react"
 import type { PracticeAttempt, PracticeTask } from "@/types/learning"
 import { PracticeAttemptList } from "./PracticeAttemptList"
+import { DEMO_MODE } from "@/lib/demo/config"
 
 export type { PracticeAttempt, PracticeTask }
 
@@ -91,7 +92,7 @@ export function PracticeTaskItem({
           }}
         >
           <Upload className="h-3.5 w-3.5" />
-          {isUploading ? "上传中" : "上传练习照片"}
+          {DEMO_MODE ? task.statusLabel === "已领取" ? "已领取练习" : "领取练习" : isUploading ? "上传中" : "上传练习照片"}
         </button>
 
         <ChevronRight

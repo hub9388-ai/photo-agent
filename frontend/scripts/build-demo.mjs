@@ -9,4 +9,5 @@ const result = spawnSync(process.execPath, [require.resolve("next/dist/bin/next"
   stdio: "inherit",
 })
 if (result.error) console.error(result.error.message)
-process.exit(result.status ?? 1)
+if (result.status !== 0) process.exit(result.status ?? 1)
+await import("./build-retouch-demo.mjs")

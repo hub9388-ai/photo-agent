@@ -23,19 +23,6 @@ export const catCase = {
   practice: "用三个不同机位拍摄同一主体，比较头部背景是否干净；保留眼神清晰、四肢完整的一张。",
 }
 
-export const controls = [
-  { key: "brightness", label: "亮度", initial: 4, min: -30, max: 30 },
-  { key: "contrast", label: "对比度", initial: 8, min: -30, max: 30 },
-  { key: "saturation", label: "饱和度", initial: -5, min: -30, max: 30 },
-] as const
-export type Adjustments = Record<(typeof controls)[number]["key"], number>
-export const neutral: Adjustments = { brightness: 0, contrast: 0, saturation: 0 }
-export const suggested: Adjustments = { brightness: 4, contrast: 8, saturation: -5 }
-// Shared by preview and export. Browser filters are not RAW/EV conversions.
-export function adjustmentFilter(values: Adjustments) {
-  return `brightness(${1 + values.brightness / 100}) contrast(${1 + values.contrast / 100}) saturate(${1 + values.saturation / 100})`
-}
-
 export const westLakePlan = [
   { time: "08:00–09:30", place: "断桥 → 白堤", task: "以堤岸和桥线组织画面，练习远景、人物与湖面的层次。", equipment: "24–35mm；先观察光线方向，避免把人物拍成无细节的剪影。" },
   { time: "09:30–11:00", place: "孤山及周边湖岸", task: "用树枝、门洞或廊柱做前景，拍摄一组有留白的湖景。", equipment: "35–50mm；改变站位，避开杂乱背景。" },

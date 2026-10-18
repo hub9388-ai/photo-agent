@@ -4,13 +4,15 @@
  */
 
 import type { ApiResponse } from "@/types/api"
+import { DEMO_MODE } from "@/lib/demo/config"
+import { demoRequest } from "@/lib/demo/api"
 
 // API 配置
 const API_MODE = process.env.NEXT_PUBLIC_API_MODE || "mock"
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
 
-export const isMockMode = () => API_MODE === "mock"
-export const getApiBaseUrl = () => API_BASE_URL
+export const isMockMode = () => !DEMO_MODE && API_MODE === "mock"
+export const getApiBaseUrl = () => DEMO_MODE ? "" : API_BASE_URL
 
 // 请求配置选项
 interface RequestOptions extends RequestInit {
@@ -19,7 +21,7 @@ interface RequestOptions extends RequestInit {
 
 // 构建完整 URL
 function buildUrl(path: string, params?: Record<string, string | number | boolean | undefined>): string {
-  const baseUrl = isMockMode() ? "" : API_BASE_URL
+  const baseUrl = DEMO_MODE || isMockMode() ? "" : API_BASE_URL
   const url = new URL(path, baseUrl || window.location.origin)
 
   if (params) {
@@ -42,6 +44,7 @@ export function buildApiUrl(
 
 // 通用请求函数
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  if (DEMO_MODE) return await demoRequest(path, options) as T
   const { params, ...fetchOptions } = options
   const url = buildUrl(path, params)
 
@@ -84,6 +87,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 }
 
 export async function uploadForm<T>(path: string, formData: FormData): Promise<T> {
+  if (DEMO_MODE) throw new Error("演示模式仅使用预置猫图，请点击“使用示例照片”；任意照片上传需完整后端。")
   const url = buildUrl(path)
   const response = await fetch(url, {
     method: "POST",
