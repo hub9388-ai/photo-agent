@@ -1,4 +1,4 @@
-"""Local HTTP portrait guard acceptance. No edit is confirmed; no model request."""
+"""Local HTTP portrait guards and pet rounding route. No edit/model request is confirmed."""
 import json
 import secrets
 import time
@@ -36,6 +36,11 @@ def main():
     prefix = f"/api/sessions/{sid}"
     missing = request(prefix + "/messages", {"text": "请让人物自然瘦一些"})
     assert missing["status"] == "failed" and missing["steps"] == [] and "笔刷" in missing["error"]
+    pet = request(prefix + "/messages", {"text": "让猫变得圆润一些，其他保持不变"})
+    assert pet["status"] == "queued" and len(pet["steps"]) == 1
+    assert pet["steps"][0]["tool"] == "replace_region"
+    assert pet["steps"][0]["status"] == "waiting" and pet["steps"][0]["run_id"] is None
+    assert request(prefix + f"/messages/{pet['id']}/cancel", {})["status"] == "canceled"
     run = request(prefix + "/tools", {"tool": "split_layers", "params": {}})["run"]
     deadline = time.monotonic() + 20
     while run["status"] in {"queued", "running"}:
@@ -58,6 +63,7 @@ def main():
     assert current["current_asset_id"] == current["original_asset_id"] == asset["id"]
     report = {"status": "passed", "session_id": sid, "http_steps": log,
               "missing_selection_blocked": True, "simplified_split_blocked": True,
+              "pet_rounding_without_selection_waits_for_confirmation": True,
               "selected_body_plan_waits_for_confirmation": True, "test_plan_canceled": True,
               "original_and_revision_unchanged": True,
               "scope": "local API guards and waiting plan only; no model or portrait quality evaluation"}

@@ -1,20 +1,20 @@
 {
   "verified_date": "2026-10-18",
   "timezone": "Asia/Shanghai",
-  "generated_at": "2026-10-18T20:23:02+08:00",
-  "code_revision": "0e0259c81601e958ce32c6da86de73e33e28cb07",
+  "generated_at": "2026-10-18T21:27:45+08:00",
+  "code_revision": "ffdc51df00fb60a3d397f6aa79b7361b45717fbb",
   "scope": "Repository-owned automated tests; parameterized items count separately; subtests and scripts excluded from case total.",
-  "total": 197,
+  "total": 200,
   "status_counts": {
-    "passed": 197
+    "passed": 200
   },
   "main_subtests_excluded": 11,
   "test_files": 39,
   "result_times": {
-    "main-results.xml": "2026-10-18T20:18:52+08:00",
-    "retouch-results.json": "2026-10-18T20:19:03+08:00",
-    "evaluator-results.json": "2026-10-18T20:19:04+08:00",
-    "browser-results.json": "2026-10-18T20:19:28+08:00"
+    "main-results.xml": "2026-10-18T21:27:12+08:00",
+    "retouch-results.json": "2026-10-18T21:27:21+08:00",
+    "evaluator-results.json": "2026-10-18T21:27:22+08:00",
+    "browser-results.json": "2026-10-18T21:27:43+08:00"
   },
   "modules": [
     {
@@ -62,8 +62,8 @@
     {
       "id": "retouch",
       "name": "人物保护、笔刷与修图执行",
-      "cases": 32,
-      "passed": 32
+      "cases": 35,
+      "passed": 35
     },
     {
       "id": "eval",
@@ -79,10 +79,10 @@
     }
   ],
   "evidence_sha256": {
-    "main-results.xml": "4f2ab17c92c27609abec672f962b1642036faa60131bd6ec050f8dc715f1bb86",
-    "retouch-results.json": "03bc343e6a7406e5da175c628aae9e4f44c5cd95165f163964e02236e6a43b20",
+    "main-results.xml": "9e4267992ce313e16adb3bff4c307a26f25dbeac16a9498312701fca3050e8a0",
+    "retouch-results.json": "ae3573d49e65fc9f3d4e68c922a6be762efd06ad062b6367a667abcf1054d96b",
     "evaluator-results.json": "be0df06fb68a72eef5dbc522b158c10ba44dcbe06df9543982852aca03a1ccd3",
-    "browser-results.json": "4cfc5a3b44de3178e21cb971401a7ccbe21545e2f80cc198007902ebed95d87c"
+    "browser-results.json": "2ea11de0b2eeabb1b4bbf75f787ba0d2f24ca66cc88f509cf1e0e315615d4189"
   },
   "test_source_sha256": {
     "backend/tests/test_agent_request_contract.py": "bef5406f771e64485741b88560bb0418b35df63d1abc9cf48f6287fcb0a78a95",
@@ -120,7 +120,7 @@
     "tests/test_retouch_brush.py": "eca83d123c0a94196378ec05bbd486129a3db2fc03714be1c01f2709fbba50b0",
     "tests/test_retouch_live.py": "d8e9a6dac38af7327d696cb0ad6c5a5d1bc4a46dd5eccd8627c3d810d78d14f0",
     "tests/test_retouch_output_limits.py": "2d1aac015d9fb368f4b13b7f031a155356e2bb90f290ec259c30d0337a85cc1c",
-    "tests/test_retouch_portrait.py": "2808f5c80f73cfcd4ea4073c13cd06cb30e75153383ff7eea8c459b08b84121d",
+    "tests/test_retouch_portrait.py": "a111eec129668201a11c17f067f18984db6b07155ce8366b736b7d039d8d0005",
     "tests/test_runtime.py": "020e3fb5d28f16cf18d0395f0ab21e9ef755a4ae578f2b895e25c25e7e12439e",
     "tests/test_storage.py": "0fc996ee0ca372dd9991deb2e543dfa9aa8579e669154d24aa4d6cdd2505aa5a",
     "tests/test_trace.py": "01a2a4f8ac878daa450edafb13f8710af15138f2f99fbcb12c76379a4aa162d1"
@@ -1414,6 +1414,13 @@
     },
     {
       "file": "tests/test_retouch_portrait.py",
+      "id": "test_retouch_portrait.PortraitTests.test_explicit_pet_rounding_does_not_match_human_or_read_only_requests",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_portrait.py",
       "id": "test_retouch_portrait.PortraitTests.test_mask_must_be_local_nonempty_and_current_size",
       "status": "passed",
       "suite": "retouch",
@@ -1429,6 +1436,20 @@
     {
       "file": "tests/test_retouch_portrait.py",
       "id": "test_retouch_portrait.PortraitTests.test_original_source_rejects_candidate_split_and_transformed_layers",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_portrait.py",
+      "id": "test_retouch_portrait.PortraitTests.test_pet_rounding_respects_existing_selection_and_ambiguous_layers",
+      "status": "passed",
+      "suite": "retouch",
+      "module": "retouch"
+    },
+    {
+      "file": "tests/test_retouch_portrait.py",
+      "id": "test_retouch_portrait.PortraitTests.test_pet_rounding_without_selection_waits_for_confirmation_not_brush",
       "status": "passed",
       "suite": "retouch",
       "module": "retouch"

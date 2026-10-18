@@ -2,8 +2,8 @@
 
 验证日期：2026-10-18（Asia/Shanghai）。
 
-共 **197 条自动化用例**，覆盖 **10 个模块、39 个测试文件**。
-结果：{'passed': 197}；另有 11 个子场景，不重复计入总数。
+共 **200 条自动化用例**，覆盖 **10 个模块、39 个测试文件**。
+结果：{'passed': 200}；另有 11 个子场景，不重复计入总数。
 
 统计来源为运行报告，不是函数名或 assert 数量。[阅读测试方法与结论](README.md)；[机器可读快照](results.json)。
 
@@ -16,7 +16,7 @@
 | 素材、规划与数据存储 | 21 | 21 |
 | 事件日志与部署保护 | 8 | 8 |
 | 后期建议转换与原图传递 | 22 | 22 |
-| 人物保护、笔刷与修图执行 | 32 | 32 |
+| 人物保护、笔刷与修图执行 | 35 | 35 |
 | Agent 执行语义评测判定器 | 6 | 6 |
 | 浏览器产品流程 | 8 | 8 |
 
@@ -594,7 +594,7 @@ JSONL 追踪与用户输入摘要截断。
 
 阻止简化拆层、选区确认、原图及选区外像素保护。
 
-本次 9 条；passed 9。
+本次 12 条；passed 12。
 
 <details>
 <summary>展开全部用例名称与结果</summary>
@@ -602,9 +602,12 @@ JSONL 追踪与用户输入摘要截断。
 - `test_retouch_portrait.PortraitTests.test_body_intent_and_read_only_check_are_distinct` — passed
 - `test_retouch_portrait.PortraitTests.test_corner_and_auto_split_blocked_before_any_processing` — passed
 - `test_retouch_portrait.PortraitTests.test_direct_tool_stale_selection_blocks_before_provider` — passed
+- `test_retouch_portrait.PortraitTests.test_explicit_pet_rounding_does_not_match_human_or_read_only_requests` — passed
 - `test_retouch_portrait.PortraitTests.test_mask_must_be_local_nonempty_and_current_size` — passed
 - `test_retouch_portrait.PortraitTests.test_no_selection_saves_explanation_without_model_or_tool` — passed
 - `test_retouch_portrait.PortraitTests.test_original_source_rejects_candidate_split_and_transformed_layers` — passed
+- `test_retouch_portrait.PortraitTests.test_pet_rounding_respects_existing_selection_and_ambiguous_layers` — passed
+- `test_retouch_portrait.PortraitTests.test_pet_rounding_without_selection_waits_for_confirmation_not_brush` — passed
 - `test_retouch_portrait.PortraitTests.test_selected_body_edit_waits_for_confirmation_without_planner` — passed
 - `test_retouch_portrait.PortraitTests.test_strict_composite_preserves_all_unselected_pixels` — passed
 - `test_retouch_portrait.PortraitTests.test_transparent_candidate_not_written_or_adopted` — passed

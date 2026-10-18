@@ -147,6 +147,47 @@ class PortraitTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(region.is_body_edit("是否已经瘦身了吗？"))
         self.assertFalse(region.is_body_edit("亮度提高20%"))
 
+    def test_explicit_pet_rounding_does_not_match_human_or_read_only_requests(self):
+        for text in ("让猫变得圆润一些", "make the kitten chubby", "把小狗变胖一点"):
+            self.assertTrue(region.is_pet_rounding_edit(text))
+        for text in ("让人物瘦一些", "给猫旁边的人物瘦腰", "把猫旁边的手臂变圆润", "猫变圆润同时给女士瘦身", "不要让猫变圆润", "是否已经让猫变圆润了吗？", "把猫调亮"):
+            self.assertFalse(region.is_pet_rounding_edit(text))
+
+    async def test_pet_rounding_without_selection_waits_for_confirmation_not_brush(self):
+        with patch.object(agent.selections, "get", AsyncMock(return_value=None)), \
+             patch.object(agent, "selection_mask", AsyncMock()) as read_mask, \
+             patch.object(agent.agent, "run", AsyncMock()) as planner, \
+             patch.object(agent, "_advance", AsyncMock()) as submit:
+            turn = await agent.respond(session(), record(), "让猫变得圆润一些，其他不变")
+        planner.assert_not_awaited()
+        read_mask.assert_not_awaited()
+        submit.assert_not_awaited()
+        self.assertIsNone(turn.error)
+        self.assertEqual(turn.status, RunStatus.QUEUED)
+        self.assertEqual([step["tool"] for step in turn.plan], ["replace_region"])
+        self.assertEqual(turn.plan[0]["status"], "waiting")
+        self.assertFalse(turn.plan[0]["params"].get("mask_asset_id"))
+        self.assertFalse(region.is_body_edit(turn.plan[0]["params"]["prompt"]))
+        self.assertIn("无需先用画笔", turn.reply)
+
+    async def test_pet_rounding_respects_existing_selection_and_ambiguous_layers(self):
+        mid = str(uuid.uuid4())
+        with patch.object(agent.selections, "get", AsyncMock(return_value={"mask_asset_id": mid})), \
+             patch.object(agent.agent, "run", AsyncMock()) as planner:
+            turn = await agent.respond(session(), record(), "将猫变圆润")
+        self.assertEqual(turn.plan[0]["params"]["mask_asset_id"], mid)
+        self.assertIn("当前选区", turn.reply)
+        rec = record()
+        doc = LayerDocument.model_validate(rec.document)
+        doc.layers.append(doc.layers[0].model_copy(update={"id": "other"}))
+        rec.document = doc.model_dump(mode="json")
+        with patch.object(agent.selections, "get", AsyncMock(return_value=None)), \
+             patch.object(agent.agent, "run", AsyncMock()) as planner:
+            turn = await agent.respond(session(), rec, "将猫变圆润")
+        planner.assert_not_awaited()
+        self.assertEqual(turn.plan, [])
+        self.assertIn("图层", turn.reply)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,5 @@
 diff --git a/backend/app/agent/graph.py b/backend/app/agent/graph.py
-index 78a4eb1..d4bf9df 100644
+index 78a4eb1..ad3061a 100644
 --- a/backend/app/agent/graph.py
 +++ b/backend/app/agent/graph.py
 @@ -1,4 +1,5 @@
@@ -28,19 +28,21 @@ index 78a4eb1..d4bf9df 100644
  - 图层与选区是两个独立维度：layer_id 决定改哪一层，选区决定改哪块区域。
    用户点名了图层（如「物体2」「背景」「主体」）就把它的 id 或名字填进 layer_id。
  - 画布摘要标明已有选区时，那就是用户要改的物体：局部消除、替换、提升为图层
-@@ -23,6 +30,11 @@ _SYSTEM = """你是电商图片修图助手，通过调用工具完成用户的
+@@ -23,6 +30,13 @@ _SYSTEM = """你是电商图片修图助手，通过调用工具完成用户的
  - 一句话要改多个图层时，按图层拆成多步，每步只填一个 layer_id。
  - 改颜色、换材质、换成某物用 replace_region 并点名 layer_id；
    只改整张背景才用 replace_background。adjust_image 只做明暗冷暖，不做改色。
 +- 改变动物脸型、身体形态或眼神表情，用 replace_region 描述目标效果，
 +  保持原有摄影质感与主体特征；不要用调色或缩放整个图层冒充语义编辑。
++  猫狗变圆润等明确的动物编辑无需先画笔涂选或拆层；无选区时可按文字描述编辑整图，
++  有选区时沿用当前选区。不能把人像瘦身的强制选区要求套用到动物编辑。
 +- 人物瘦身或身形修改不需要先拆层。必须切回原图并先由用户圈出局部区域；
 +  无选区只说明如何圈选，不调用 split_layers 或整层 replace_region。
 +  当前画布说明自动拆层不可用时，不安排拆层步骤。
  - 翻转画面用 flip_layer；说了角度用 rotate_layer。
  - 用户要求拆层、把物体独立成层时，使用 split_layers 或 promote_object_to_layer。
  - 拆层默认不拆文字，只有用户明确要求时才传 include_text。
-@@ -84,6 +96,13 @@ def _graph():
+@@ -84,6 +98,13 @@ def _graph():
  
  async def run(goal: str, context: str) -> tuple[str, list[dict]]:
      """规划并校验一轮指令，返回答复与尚未下发的计划。"""
@@ -310,7 +312,7 @@ index ff5f8c0..ec40854 100644
  
  
 diff --git a/backend/app/services/agent.py b/backend/app/services/agent.py
-index 9c77944..54113e5 100644
+index 9c77944..b4e34e5 100644
 --- a/backend/app/services/agent.py
 +++ b/backend/app/services/agent.py
 @@ -7,11 +7,15 @@ from sqlalchemy.orm.attributes import flag_modified
@@ -325,7 +327,7 @@ index 9c77944..54113e5 100644
  from app.services import assets, runs, selections, tools
  from app.tools import spec_of
 +from app.tools.context import ToolError
-+from app.tools.region import is_body_edit, original_body_layer, selection_mask, validate_body_mask
++from app.tools.region import is_body_edit, is_pet_rounding_edit, original_body_layer, selection_mask, validate_body_mask
  
  logger = logging.getLogger(__name__)
  
@@ -333,12 +335,12 @@ index 9c77944..54113e5 100644
          f"图层 {len(document.layers)} 个，自下而上（{'、'.join(names)}）",
          "layer_id 填图层 id 或名字；不填则作用在选区下最上层图像，换背景作用在背景层",
          f"修订号 {record.revision}",
-+        "身形编辑必须在原图局部选区进行，禁止先自动拆层",
++        "仅人物瘦身或人像身形编辑必须在原图局部选区进行，禁止先自动拆层；动物圆润等语义编辑不强制选区",
 +        f"自动拆层{'已显式配置分割模式' if get_settings().matting_provider == 'rembg' else '不可用：当前为简化或回退模式'}",
      ]
  
      current = await assets.get_for_user(session, record.user_id, record.current_asset_id)
-@@ -66,21 +72,47 @@ def _layer_name(layer: Layer) -> str:
+@@ -66,21 +72,62 @@ def _layer_name(layer: Layer) -> str:
  async def respond(session: AsyncSession, record: EditSession, goal: str) -> AgentRun:
      """规划一轮指令并落库。多步计划先停住等确认，单步直接开跑。"""
      revision = record.revision
@@ -349,7 +351,22 @@ index 9c77944..54113e5 100644
  
      try:
 -        reply, steps = await agent.run(goal, await describe(session, record))
-+        if is_body_edit(goal):
++        if is_pet_rounding_edit(goal):
++            document = LayerDocument.model_validate(record.document)
++            targets = [layer for layer in document.layers if layer.kind is LayerKind.IMAGE and layer.visible]
++            if len(targets) == 1:
++                selected = await selections.get(record.id, record.revision)
++                scoped = bool(selected and selected.get("mask_asset_id"))
++                steps = plan_mod.validate([{"tool": "replace_region", "params": {
++                    "layer_id": targets[0].id, "revision": record.revision,
++                    "prompt": f"动物照片编辑：{goal[:200]}。仅轻微调整指定宠物的圆润程度，保留毛色花纹、姿态、肢体、其他主体与摄影质感，尽量保持背景和构图。",
++                }}])
++                steps[0]["status"] = plan_mod.WAITING
++                reply = ("将按当前选区修改宠物的圆润程度；无需拆层，确认后执行。" if scoped else
++                         "无需先用画笔涂选。将根据文字描述修改宠物的圆润程度，不拆层；确认后执行。整图语义生成可能影响其他细节，请对比原图检查。")
++            else:
++                reply, steps = "当前有多个可见图层或没有可编辑图片，请先明确要修改的宠物图层。", []
++        elif is_body_edit(goal):
 +            document = LayerDocument.model_validate(record.document)
 +            original_body_layer(record, document)
 +            mask = await selection_mask(session, record, None)
@@ -391,7 +408,7 @@ index 9c77944..54113e5 100644
          status = RunStatus.QUEUED
      elif steps:
          status = RunStatus.RUNNING
-@@ -88,8 +120,8 @@ async def respond(session: AsyncSession, record: EditSession, goal: str) -> Agen
+@@ -88,8 +135,8 @@ async def respond(session: AsyncSession, record: EditSession, goal: str) -> Agen
          status = RunStatus.SUCCEEDED
  
      turn = AgentRun(
@@ -538,7 +555,7 @@ index 7348e08..344e67f 100644
      document = document_of(record)
      if already_split(document):
 diff --git a/backend/app/tools/region.py b/backend/app/tools/region.py
-index 943b7cf..6e77228 100644
+index 943b7cf..b75a091 100644
 --- a/backend/app/tools/region.py
 +++ b/backend/app/tools/region.py
 @@ -1,9 +1,14 @@
@@ -558,7 +575,7 @@ index 943b7cf..6e77228 100644
  from app.models.asset import AssetKind
  from app.models.tool_run import ToolRun
  from app.providers import EditRequest, get_image_provider
-@@ -28,6 +33,40 @@ class ReplaceRegionIn(LayerRef, MaskRef):
+@@ -28,6 +33,55 @@ class ReplaceRegionIn(LayerRef, MaskRef):
      prompt: str = Field(min_length=1, max_length=500)
  
  
@@ -567,6 +584,21 @@ index 943b7cf..6e77228 100644
 +    if re.match(r"^(是否|是不是|有没有|是按|刚才|你刚)", text) and re.search(r"[吗?？]$", text):
 +        return False
 +    return bool(re.search(r"瘦|纤细|纖細|收腰|塑形|减肥|slim|slender|thinner|leaner|body.?shape|reshape.*body|waist", text, re.I))
++
++
++def is_pet_rounding_edit(text: str) -> bool:
++    """Only explicit cat/dog rounding; not a visual detector or a human-edit bypass."""
++    text = text.strip()
++    if re.match(r"^(是否|是不是|有没有|是按|刚才|你刚)", text) and re.search(r"[吗?？]$", text):
++        return False
++    if is_body_edit(text):
++        return False
++    if re.search(r"(不要|别|不想|不需要|不用|无需)[^，。；,;!?？]{0,16}(圆润|圓潤|胖|丰满)|\b(do not|don't)\b.{0,30}\b(chubby|rounder|plump)\b", text, re.I):
++        return False
++    if re.search(r"人物|人像|人类|模特|男人|女人|男孩|女孩|手臂|胳膊|腰部|\b(person|human|woman|man|portrait|waist|arm)\b", text, re.I):
++        return False
++    return bool(re.search(r"猫|狗|\b(cat|kitten|dog|puppy)\b", text, re.I)
++                and re.search(r"圆润|圓潤|圆一点|圆一些|胖|丰满|\b(chubby|rounder|plump)\b", text, re.I))
 +
 +
 +def original_body_layer(record, document: LayerDocument, layer_id: str | None = None) -> Layer:
@@ -599,7 +631,7 @@ index 943b7cf..6e77228 100644
  def _target(document: LayerDocument, layer_id: str | None, mask: bytes | None) -> Layer:
      """点名了图层就改那一层；否则取选区下最上层，没选区就取最上层图像。"""
      if not layer_id and mask is not None:
-@@ -35,6 +74,18 @@ def _target(document: LayerDocument, layer_id: str | None, mask: bytes | None) -
+@@ -35,6 +89,18 @@ def _target(document: LayerDocument, layer_id: str | None, mask: bytes | None) -
      return resolve_target(document, layer_id)
  
  
@@ -618,7 +650,7 @@ index 943b7cf..6e77228 100644
  def _region(source: bytes, mask: bytes | None, layer: Layer, canvas: tuple[int, int]) -> bytes:
      """无选区就用该层透明通道当区域改整层；有选区则取与该层的交集。"""
      if mask is None:
-@@ -52,7 +103,19 @@ async def _edit_region(session: AsyncSession, run: ToolRun, *, scoped: str, whol
+@@ -52,7 +118,19 @@ async def _edit_region(session: AsyncSession, run: ToolRun, *, scoped: str, whol
          raise ToolError("选区已过期，请重新选择")
  
      document = document_of(record)
@@ -638,7 +670,7 @@ index 943b7cf..6e77228 100644
      layer = _target(document, run.params.get("layer_id"), mask)
  
      await runs.report(session, run, 20, "读取图层")
-@@ -66,7 +129,10 @@ async def _edit_region(session: AsyncSession, run: ToolRun, *, scoped: str, whol
+@@ -66,7 +144,10 @@ async def _edit_region(session: AsyncSession, run: ToolRun, *, scoped: str, whol
          )
      )[0]
      await runs.report(session, run, 85, "合并结果")
