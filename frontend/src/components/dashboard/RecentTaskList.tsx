@@ -144,7 +144,7 @@ export function RecentTaskList() {
   )
 
   return (
-    <Card className="lg:col-span-2">
+    <Card id="recent-tasks" role="region" aria-label="最近任务" className="lg:col-span-2 scroll-mt-28">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">最近任务</CardTitle>

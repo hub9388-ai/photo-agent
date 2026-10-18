@@ -4,16 +4,13 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { DEMO_MODE } from "@/lib/demo/config"
+import { photographyWorkflow } from "@/lib/photography-workflow"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   Camera,
   Home,
-  FolderOpen,
-  MapPin,
-  GraduationCap,
   Clock,
-  Paintbrush,
   Search,
   Bell,
   User,
@@ -21,11 +18,7 @@ import {
 
 const navItems = [
   { path: "/", label: "工作台", icon: Home },
-  { path: "/analysis", label: "分析", icon: Camera },
-  { path: "/assets", label: "素材库", icon: FolderOpen },
-  { path: "/retouch", label: "修图", icon: Paintbrush },
-  { path: "/planning", label: "规划", icon: MapPin },
-  { path: "/learning", label: "学习", icon: GraduationCap },
+  ...photographyWorkflow,
   { path: "/history", label: "历史", icon: Clock },
 ]
 
@@ -53,6 +46,7 @@ export function TopNav() {
               <Link
                 key={item.path}
                 href={item.path}
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "relative flex shrink-0 items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors",
                   isActive

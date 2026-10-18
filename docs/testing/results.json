@@ -1,20 +1,20 @@
 {
   "verified_date": "2026-10-18",
   "timezone": "Asia/Shanghai",
-  "generated_at": "2026-10-18T21:27:45+08:00",
-  "code_revision": "ffdc51df00fb60a3d397f6aa79b7361b45717fbb",
+  "generated_at": "2026-10-18T22:44:57+08:00",
+  "code_revision": "7aa47183b513cb5c343fd5b272a238831fa47260",
   "scope": "Repository-owned automated tests; parameterized items count separately; subtests and scripts excluded from case total.",
-  "total": 200,
+  "total": 202,
   "status_counts": {
-    "passed": 200
+    "passed": 202
   },
   "main_subtests_excluded": 11,
   "test_files": 39,
   "result_times": {
-    "main-results.xml": "2026-10-18T21:27:12+08:00",
-    "retouch-results.json": "2026-10-18T21:27:21+08:00",
-    "evaluator-results.json": "2026-10-18T21:27:22+08:00",
-    "browser-results.json": "2026-10-18T21:27:43+08:00"
+    "main-results.xml": "2026-10-18T22:43:55+08:00",
+    "retouch-results.json": "2026-10-18T22:44:30+08:00",
+    "evaluator-results.json": "2026-10-18T22:44:31+08:00",
+    "browser-results.json": "2026-10-18T22:44:55+08:00"
   },
   "modules": [
     {
@@ -74,15 +74,15 @@
     {
       "id": "browser",
       "name": "浏览器产品流程",
-      "cases": 8,
-      "passed": 8
+      "cases": 10,
+      "passed": 10
     }
   ],
   "evidence_sha256": {
-    "main-results.xml": "9e4267992ce313e16adb3bff4c307a26f25dbeac16a9498312701fca3050e8a0",
+    "main-results.xml": "6d4674fc8c198f2fd6a927fc140e8ae2e655fee83bc07f682b55b3a2b361e0d9",
     "retouch-results.json": "ae3573d49e65fc9f3d4e68c922a6be762efd06ad062b6367a667abcf1054d96b",
     "evaluator-results.json": "be0df06fb68a72eef5dbc522b158c10ba44dcbe06df9543982852aca03a1ccd3",
-    "browser-results.json": "2ea11de0b2eeabb1b4bbf75f787ba0d2f24ca66cc88f509cf1e0e315615d4189"
+    "browser-results.json": "b9bea5c42551b565cc39ab425f07ac5e0732b890af1492f2876aee48f18c4e07"
   },
   "test_source_sha256": {
     "backend/tests/test_agent_request_contract.py": "bef5406f771e64485741b88560bb0418b35df63d1abc9cf48f6287fcb0a78a95",
@@ -102,7 +102,7 @@
     "backend/tests/test_skills_mcp_stage85.py": "d6dde95f38b90d2a3969ecee8f65cdb285f6baf11d6e461849fd0080aa73e7e9",
     "backend/tests/test_stage6_errors.py": "c8a1463eb533ef2eca24f868d41a0dcf30570230c0a4d6d0793fd8ea4db42182",
     "evaluations/001-shadow-direction/test_evaluate.py": "19cb6359a2e15510257cd4e2e5c6355dff7e1527528327f92920ed176e486619",
-    "frontend/tests/product-demo.spec.ts": "6afa5042aef5ed359821c7d4c95898dc120d76d7d1a97dba62b0dde5953c5c17",
+    "frontend/tests/product-demo.spec.ts": "6b2de301af92d5dd494011ad83568ee6c81893a584319bd694abbc9406a997b3",
     "tests/test_asset_recovery.py": "62cb3f54282b604857c6648cc294d0a2a5b795cd08678554a2c8d8b71f82f5c0",
     "tests/test_cli.py": "45d401199005e488bd4cacc4e14cce605b1d983398c2525b2618e2a076440c0e",
     "tests/test_coach_lifecycle.py": "0a8d2708568b7f60ba9bb970216b0fd085a07fa851867619b0fb6629cb4651f6",
@@ -1569,6 +1569,20 @@
     {
       "file": "frontend/tests/product-demo.spec.ts",
       "id": "unsupported preferences and destinations do not receive unrelated fixture results",
+      "status": "passed",
+      "suite": "browser",
+      "module": "browser"
+    },
+    {
+      "file": "frontend/tests/product-demo.spec.ts",
+      "id": "dashboard task entries, navigation and workflow allow independent entry",
+      "status": "passed",
+      "suite": "browser",
+      "module": "browser"
+    },
+    {
+      "file": "frontend/tests/product-demo.spec.ts",
+      "id": "dashboard analysis handoff preserves photo, job and Post advice in editor import",
       "status": "passed",
       "suite": "browser",
       "module": "browser"

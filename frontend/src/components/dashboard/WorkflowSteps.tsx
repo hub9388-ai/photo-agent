@@ -1,62 +1,25 @@
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowRight } from "lucide-react"
-
-const steps = [
-  {
-    number: 1,
-    color: "bg-blue-500",
-    title: "上传媒体",
-    description: "mediaId / previewUrl / metadata",
-  },
-  {
-    number: 2,
-    color: "bg-blue-500",
-    title: "Post + Coach 并行分析",
-    description: "多 Agent 同时运行，互不干扰",
-  },
-  {
-    number: 3,
-    color: "bg-green-500",
-    title: "SSE 实时状态",
-    description: "agent.started / progress / result",
-  },
-  {
-    number: 4,
-    color: "bg-orange-500",
-    title: "结果持久化",
-    description: "results API 保存与历史恢复",
-  },
-]
+import { photographyWorkflow } from "@/lib/photography-workflow"
 
 export function WorkflowSteps() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
-          <span className="text-blue-500">实时协作链路</span>
-        </CardTitle>
+        <CardTitle className="text-base">摄影工作流程</CardTitle>
+        <p className="text-sm leading-6 text-slate-600">推荐按以下流程体验，也可以直接进入任一环节；分析后即可查看学习反馈，无需等待修图完成。</p>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 flex-1">
-            {steps.map((step, index) => (
-              <div key={step.number} className="flex items-center gap-3">
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full ${step.color} text-white flex items-center justify-center text-sm font-medium`}>
-                    {step.number}
-                  </div>
-                  <div>
-                    <p className="font-medium text-slate-900">{step.title}</p>
-                    <p className="text-xs text-slate-500">{step.description}</p>
-                  </div>
-                </div>
-                {index < steps.length - 1 && (
-                  <ArrowRight className="w-4 h-4 text-slate-300" />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+        <ol aria-label="摄影工作流程" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          {photographyWorkflow.map((step, index) => (
+            <li key={step.path}>
+              <Link href={step.path} className="flex h-full items-start gap-3 rounded-lg border border-slate-200 p-3 hover:border-blue-400 focus-visible:outline-2 focus-visible:outline-blue-500">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-semibold text-blue-700">{index + 1}</span>
+                <div><p className="font-medium text-slate-900">{step.title}</p><p className="mt-1 text-xs leading-5 text-slate-500">{step.step}</p></div>
+              </Link>
+            </li>
+          ))}
+        </ol>
       </CardContent>
     </Card>
   )

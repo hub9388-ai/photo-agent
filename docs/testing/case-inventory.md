@@ -2,8 +2,8 @@
 
 验证日期：2026-10-18（Asia/Shanghai）。
 
-共 **200 条自动化用例**，覆盖 **10 个模块、39 个测试文件**。
-结果：{'passed': 200}；另有 11 个子场景，不重复计入总数。
+共 **202 条自动化用例**，覆盖 **10 个模块、39 个测试文件**。
+结果：{'passed': 202}；另有 11 个子场景，不重复计入总数。
 
 统计来源为运行报告，不是函数名或 assert 数量。[阅读测试方法与结论](README.md)；[机器可读快照](results.json)。
 
@@ -18,7 +18,7 @@
 | 后期建议转换与原图传递 | 22 | 22 |
 | 人物保护、笔刷与修图执行 | 35 | 35 |
 | Agent 执行语义评测判定器 | 6 | 6 |
-| 浏览器产品流程 | 8 | 8 |
+| 浏览器产品流程 | 10 | 10 |
 
 ## Agent 协作与上下文
 
@@ -701,7 +701,7 @@ JSONL 追踪与用户输入摘要截断。
 
 分析、修图、素材、学习、规划、导出与异常反馈。
 
-本次 8 条；passed 8。
+本次 10 条；passed 10。
 
 <details>
 <summary>展开全部用例名称与结果</summary>
@@ -714,5 +714,7 @@ JSONL 追踪与用户输入摘要截断。
 - `original sliders apply to actual pixels, undo and export ZIP work` — passed
 - `style selection affects preset advice and reset leaves real-mode caches untouched` — passed
 - `unsupported preferences and destinations do not receive unrelated fixture results` — passed
+- `dashboard task entries, navigation and workflow allow independent entry` — passed
+- `dashboard analysis handoff preserves photo, job and Post advice in editor import` — passed
 
 </details>

@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { LucideIcon } from "lucide-react"
+import Link from "next/link"
 
 interface CapabilityCardProps {
   icon: LucideIcon
@@ -7,6 +8,7 @@ interface CapabilityCardProps {
   tags: string
   description: string
   color: "blue" | "green" | "orange" | "purple"
+  href: string
 }
 
 const colorMap = {
@@ -32,19 +34,21 @@ const colorMap = {
   },
 }
 
-export function CapabilityCard({ icon: Icon, title, tags, description, color }: CapabilityCardProps) {
+export function CapabilityCard({ icon: Icon, title, tags, description, color, href }: CapabilityCardProps) {
   const colors = colorMap[color]
 
   return (
-    <Card className={colors.border}>
+    <Link href={href} className="block h-full rounded-xl transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-500">
+    <Card className={`${colors.border} h-full`}>
       <CardContent className="pt-6">
         <div className={`w-10 h-10 rounded-lg ${colors.bg} flex items-center justify-center mb-3`}>
           <Icon className={`w-5 h-5 ${colors.icon}`} />
         </div>
         <h3 className="font-semibold text-slate-900 mb-1">{title}</h3>
         <p className="text-sm text-slate-500 mb-2">{tags}</p>
-        <p className="text-xs text-slate-400">{description}</p>
+        <p className="text-sm leading-6 text-slate-600">{description}</p>
       </CardContent>
     </Card>
+    </Link>
   )
 }
